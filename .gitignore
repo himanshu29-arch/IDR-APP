@@ -32,7 +32,7 @@ bitbucket-pipelines.yml
 local.properties
 *.iml
 
-# node.js
+# node.js 
 #
 node_modules/
 package-lock.json # include if you are using npm - don't use both yarn and npm
