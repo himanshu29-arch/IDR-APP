@@ -84,7 +84,7 @@ export default function AddNote({navigation, route}) {
           <CustomIcon name='arrow-back' />
         </Pressable>
         <MyText fontType="bold" style={{ marginLeft: 20, fontSize: 20 }}>
-          Add Technician
+          Add Notes
         </MyText>
       </View>
       <CustomIcon size={25} name='notifications-outline' />

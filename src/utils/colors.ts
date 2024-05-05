@@ -5,6 +5,7 @@ export const AppColors = {
     lightgrey: "#F7F7F7",
     iconsGrey: "#a2a2a7",
     bluishgrey: "#E6EBF0",
+    grey: "#8C8A8A",
     white: "#fff",
     black: "#000",
     InActiveBottomC: "#BFC2FF",

@@ -25,6 +25,7 @@ export default function Dashboard({navigation}) {
  useEffect(() => {
   if(workOrder?.length !== 0){
     console.log("==> ",workOrder?.workOrder);
+    console.log("==> WORK ORDER LENGTH",workOrder?.workOrder?.length);
    const OpenOrder =  workOrder?.workOrder.filter((i) => i.status === "Open");
    setOpenWorkOrder(OpenOrder)
   }
@@ -72,9 +73,7 @@ export default function Dashboard({navigation}) {
 
         <View style={[styles.card, { marginTop: -SCREEN_HEIGHT * 0.2 }]}>
           <MyText fontType="medium" style={{ fontSize: 18, marginVertical: 10 }}>Select Client</MyText>
-          <MyText style={{ fontSize: 14, marginVertical: 10 }}>
-            Lorem Ipsum is simply dummy text of the printing and type setting industry.
-          </MyText>
+        
 
           <CustomDropdown
             options={clientData?.data}
@@ -89,8 +88,13 @@ export default function Dashboard({navigation}) {
 
             data={[
             {
-              id: 2,
+              id: 1,
               name: 'Open work order',
+              img: IconsPath.Openwork
+            },
+            {
+              id: 2,
+              name: 'All work order',
               img: IconsPath.Openwork
             }]}
             horizontal
@@ -98,7 +102,7 @@ export default function Dashboard({navigation}) {
             scrollEnabled={false}
             renderItem={({ item }) =>
               <View style={styles.assigncontainer}>
-                <MyText style={styles.opentasks}>{openWorkOrder?.length}</MyText>
+                <MyText style={styles.opentasks}>{item?.id === 1 ? openWorkOrder?.length : workOrder?.workOrder?.length}</MyText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                   <Image
                     source={item.img}

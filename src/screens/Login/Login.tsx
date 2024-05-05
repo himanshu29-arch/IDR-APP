@@ -15,12 +15,13 @@ import { useLoginMutation } from '../../services/RTKClient'
 import { useDispatch } from 'react-redux'
 import { signIn } from '../../redux/slices/authSlice'
 import { useToast } from 'react-native-toast-notifications'
+import Loader from '../../components/Loader'
 
 
 type prop = { email: string, password: string }
 
 export default function Login() {
-  const [login ] = useLoginMutation()
+  const [login, {isLoading} ] = useLoginMutation()
 
   const [ischeck, setIsCheck] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -56,7 +57,7 @@ export default function Login() {
         toast.show(payload.message, {
           type: "success"
         });
-        dispatch(signIn(payload))
+        dispatch(signIn({payload: payload, rememberMe: ischeck}))
       })
       .catch((error) =>{ 
         toast.show(error.data.message, {
@@ -69,7 +70,7 @@ export default function Login() {
       <SafeAreaView style={{
         flex: 1, backgroundColor: "white"
       }}>
-
+<Loader loading={isLoading} />
         <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} />
         <ScrollView>
           <View style={styles.logobg}>

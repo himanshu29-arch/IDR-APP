@@ -1,12 +1,14 @@
-import { View, Text, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity } from 'react-native'
+import { View, Text, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, FlatList } from 'react-native'
 import React from 'react'
 import { AppColors } from '../../utils/colors'
 import { SCREEN_HEIGHT } from '../../utils/Dimensions'
 import CustomIcon from '../../components/customIcon'
 import MyText from '../../components/customtext'
 import { ShadowStyle } from '../../utils/constants'
+import { useGetAllWorkOrderQuery } from '../../services/RTKClient'
 
 export default function WorkOrder({navigation}) {
+  const { data: workOrder, isLoading: isLoading1 } = useGetAllWorkOrderQuery()
   return (
     <SafeAreaView style={{ backgroundColor: AppColors.white, flex: 1 }}>
       <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} translucent={false} />
@@ -31,33 +33,39 @@ export default function WorkOrder({navigation}) {
             <CustomIcon name='chevron-forward' color={AppColors.darkgreyColor} />
           </TouchableOpacity>
 
-          <View style={[styles.card, ShadowStyle]}>
-            <MyText fontType="medium" style={{ fontSize: 14 }}>
-              Work Order Code
-            </MyText>
-            <MyText style={{ fontSize: 14 }}>
-              WO100000001853
-            </MyText>
+          <FlatList
+           data={workOrder?.workOrder}
+           showsHorizontalScrollIndicator={false}
+           renderItem={({item}) => 
+            <View style={[styles.card, ShadowStyle]}>
+           <MyText fontType="medium" style={{ fontSize: 14 }}>
+             Work Order Code
+           </MyText>
+           <MyText style={{ fontSize: 14 }}>
+             {item.work_order_type}
+           </MyText>
 
-            <View style={{ flexDirection: 'row', justifyContent:'space-between', width: '100%', marginTop: 30 }}>
-              <View>
-                <MyText fontType="medium" style={{ fontSize: 14 }}>
-                  Client name
-                </MyText>
-                <MyText style={{ fontSize: 14, marginTop: 10 }}>
-                  IDR Technology solutions
-                </MyText>
-              </View>
-              <View>
-                <MyText fontType="medium" style={{ fontSize: 14 }}>
-                 Status
-                </MyText>
-                <MyText style={{ fontSize: 14, marginTop: 10 }}>
-                 Open
-                </MyText>
-              </View>
-            </View>
-          </View>
+           <View style={{ flexDirection: 'row', justifyContent:'space-between', width: '100%', marginTop: 30 }}>
+             <View>
+               <MyText fontType="medium" style={{ fontSize: 14 }}>
+                 Client name
+               </MyText>
+               <MyText style={{ fontSize: 14, marginTop: 10 }}>
+                 {item.client_name}
+               </MyText>
+             </View>
+             <View>
+               <MyText fontType="medium" style={{ fontSize: 14 }}>
+                Status
+               </MyText>
+               <MyText style={{ fontSize: 14, marginTop: 10 }}>
+                {item.status}
+               </MyText>
+             </View>
+           </View>
+         </View>
+         }
+          />
 
         </View>
       </View>
@@ -101,8 +109,7 @@ const styles = StyleSheet.create({
     alignItems: 'flex-start',
     borderRadius: 10,
     padding: 20,
-    marginVertical: 10,
-    marginTop: 20
+    margin:10
 
   },
   fab:{

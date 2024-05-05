@@ -16,7 +16,7 @@ const Stack = createNativeStackNavigator();
 
 export default function EntryStack() {
   const [splash, setSplash] = useState(true);
-  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
+  const {isLoggedIn, rememberMe} = useSelector((state: RootState) => state.auth)
 
 
   useEffect(() => {

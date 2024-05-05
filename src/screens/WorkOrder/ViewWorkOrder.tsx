@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, Pressable } from 'react-native'
+import { View, Text, StyleSheet, SafeAreaView, Pressable, StatusBar } from 'react-native'
 import React from 'react'
 import { AppColors } from '../../utils/colors'
 import { SCREEN_WIDTH } from '../../utils/Dimensions'
@@ -17,6 +17,7 @@ export default function ViewWorkOrder({ navigation, route }) {
     return (
         <SafeAreaView style={styles.conatiner}>
             <Loader loading={isLoading} />
+            <StatusBar backgroundColor={AppColors.white} barStyle={"dark-content"} translucent={false}/>
             <View style={styles.mainrow}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Pressable onPress={() => navigation.goBack()} style={{ padding: 5, borderRadius: 50, borderColor: AppColors.iconsGrey, borderWidth: 1 }}>
