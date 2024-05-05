@@ -21,7 +21,7 @@ import Loader from '../../components/Loader'
 type prop = { email: string, password: string }
 
 export default function Login() {
-  const [login, {isLoading} ] = useLoginMutation()
+  const [login, { isLoading }] = useLoginMutation()
 
   const [ischeck, setIsCheck] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
@@ -42,7 +42,7 @@ export default function Login() {
 
   const toast = useToast();
 
-  
+
 
   const onSubmit = (data: prop) => {
     const { email, password } = data;
@@ -57,9 +57,9 @@ export default function Login() {
         toast.show(payload.message, {
           type: "success"
         });
-        dispatch(signIn({payload: payload, rememberMe: ischeck}))
+        dispatch(signIn({ payload: payload, rememberMe: ischeck }))
       })
-      .catch((error) =>{ 
+      .catch((error) => {
         toast.show(error.data.message, {
           type: "danger"
         });
@@ -70,7 +70,7 @@ export default function Login() {
       <SafeAreaView style={{
         flex: 1, backgroundColor: "white"
       }}>
-<Loader loading={isLoading} />
+        <Loader loading={isLoading} />
         <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} />
         <ScrollView>
           <View style={styles.logobg}>

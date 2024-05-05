@@ -22,7 +22,6 @@ import Loader from '../../components/Loader';
 
 export default function AddTechnician({navigation, route}) {
   const { WorkOrder } = route.params;
-  console.log("payload ===> Addtechnician ", WorkOrder);
   
     const [addTechnician, {isLoading}] = useAddTechnicianMutation()
     const toast = useToast();
@@ -60,12 +59,10 @@ export default function AddTechnician({navigation, route}) {
         "other_details": otherDetails,  //optional
         "procedures": procedures  //optional
       }
-console.log("==> ",body);
-// return
+
 addTechnician(body)
  .unwrap()
       .then((payload) => {
-        console.log('fulfilled', payload)
         toast.show(payload.message, {
           type: "success"
         });
@@ -73,8 +70,7 @@ addTechnician(body)
           workOrder: WorkOrder
         })
       })
-      .catch((error) =>{ 
-        console.log('rejected', error) 
+      .catch((error) =>{
         toast.show(error.data.message, {
           type: "danger"
         });

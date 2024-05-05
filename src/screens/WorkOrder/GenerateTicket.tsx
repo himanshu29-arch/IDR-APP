@@ -50,7 +50,6 @@ export default function GenerateTicket({ navigation }) {
 
   useEffect(() => {
     if (select?.client_id) {
-      console.log("REFETCH", select?.client_id, isError, error, locationData);
       refetch();
     }
   }, [select?.client_id, refetch]);
@@ -91,11 +90,10 @@ export default function GenerateTicket({ navigation }) {
       issue: Issue,
       status: status
     }
-    console.log("==> ", body);
+   
     addWorkOrder(body)
       .unwrap()
       .then((payload) => {
-        console.log('fulfilled', payload)
         toast.show(payload.message, {
           type: "success"
         });
@@ -104,7 +102,6 @@ export default function GenerateTicket({ navigation }) {
         })
       })
       .catch((error) => {
-        console.log('rejected', error)
         toast.show(error.data.message, {
           type: "danger"
         });

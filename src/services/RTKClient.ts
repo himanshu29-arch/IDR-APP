@@ -12,7 +12,6 @@ export const rtkClient = createApi({
       const accessToken = getState().auth.userData.token;
      
       if (accessToken) {
-        console.log(accessToken);
         headers.set('Authorization', `Bearer ${accessToken}`);
       }
       return headers
@@ -39,6 +38,14 @@ export const rtkClient = createApi({
       query: () => `work_order/all`
     }),
 
+    getWorkOrderByID: builder.query({
+      query: (id) => `work_order/by_id/${id}`
+    }),
+
+    getWorkOrderByClientId: builder.query({
+      query: (id) => `work_order/by_client/${id?.client_id}`
+    }),
+
     addWorkOrder: builder.mutation({
       query: (body) => ({
         url: 'work_order/add',
@@ -63,9 +70,7 @@ export const rtkClient = createApi({
       }),
     }),
 
-    getWorkOrderByID: builder.query({
-      query: (id) => `work_order/by_id/${id}`
-    }),
+    
 
   }),
 
@@ -95,5 +100,6 @@ export const {
   useAddWorkOrderMutation,
   useAddTechnicianMutation,
   useAddNoteMutation,
-  useGetWorkOrderByIDQuery
+  useGetWorkOrderByIDQuery,
+  useGetWorkOrderByClientIdQuery
 } = rtkClient;

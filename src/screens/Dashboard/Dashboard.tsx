@@ -9,7 +9,7 @@ import CustomDropdown from '../../components/customDropdown'
 import { IconsPath } from '../../utils/InconsPath'
 import { useSelector } from 'react-redux'
 import { RootState } from '../../redux/store'
-import { useGetAllClientQuery, useGetAllWorkOrderQuery } from '../../services/RTKClient'
+import { useGetAllClientQuery, useGetAllWorkOrderQuery, useGetWorkOrderByClientIdQuery } from '../../services/RTKClient'
 import Loader from '../../components/Loader'
 import ModalDropdown from '../../components/customDropdown'
 
@@ -17,19 +17,25 @@ export default function Dashboard({navigation}) {
   const [select, setSelect] = useState({})
   const { userData } = useSelector((state: RootState) => state.auth);
   const { data:clientData, isLoading } = useGetAllClientQuery()
-  const { data: workOrder, isLoading: isLoading1 } = useGetAllWorkOrderQuery()
+  const { data: workOrder, isLoading: isLoading1, refetch } = useGetWorkOrderByClientIdQuery(select)
   const[openWorkOrder, setOpenWorkOrder] = useState([])
 
 
-
  useEffect(() => {
-  if(workOrder?.length !== 0){
-    console.log("==> ",workOrder?.workOrder);
-    console.log("==> WORK ORDER LENGTH",workOrder?.workOrder?.length);
-   const OpenOrder =  workOrder?.workOrder.filter((i) => i.status === "Open");
-   setOpenWorkOrder(OpenOrder)
+  if (select?.client_id) {
+    refetch()
+    .then(()=>{
+      if(workOrder?.workorders?.length !== 0){
+       const OpenOrder =  workOrder?.workorders.filter((i) => i.status === "Open");
+       setOpenWorkOrder(OpenOrder)
+      } else {
+        setOpenWorkOrder([])
+      }
+    })
+    console.log("===> workorder", workOrder);
+    
   }
- }, [])
+}, [select?.client_id, refetch]);
  
  
   return (
@@ -102,7 +108,7 @@ export default function Dashboard({navigation}) {
             scrollEnabled={false}
             renderItem={({ item }) =>
               <View style={styles.assigncontainer}>
-                <MyText style={styles.opentasks}>{item?.id === 1 ? openWorkOrder?.length : workOrder?.workOrder?.length}</MyText>
+                <MyText style={styles.opentasks}>{item?.id === 1 ? typeof openWorkOrder?.length === "undefined" ? 0 : openWorkOrder?.length : workOrder?.workorders?.length}</MyText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                   <Image
                     source={item.img}

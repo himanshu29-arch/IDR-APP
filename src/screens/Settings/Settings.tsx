@@ -33,7 +33,7 @@ const Logout = () => {
           <View style={styles.mainRow}>
               <View style={{ marginLeft: 10 }}>
                 <MyText fontType="bold" style={{
-                  fontSize: 16,
+                  fontSize: 22,
                   color: AppColors.white,
                 }}>
                   Settings

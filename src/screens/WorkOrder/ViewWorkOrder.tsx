@@ -17,7 +17,6 @@ import CustomDropdown from '../../components/customDropdown'
 export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
     const { data, isLoading } = useGetWorkOrderByIDQuery(OrderId)
-    console.log(data?.workOrder?.client_site)
 
     const {
         control,
