@@ -6,7 +6,7 @@ import CustomIcon from '../../components/customIcon'
 import MyText from '../../components/customtext'
 import { ShadowStyle } from '../../utils/constants'
 
-export default function WorkOrder() {
+export default function WorkOrder({navigation}) {
   return (
     <SafeAreaView style={{ backgroundColor: AppColors.white, flex: 1 }}>
       <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} translucent={false} />
@@ -62,7 +62,7 @@ export default function WorkOrder() {
         </View>
       </View>
 
-      <TouchableOpacity style={[styles.fab, ShadowStyle]}>
+      <TouchableOpacity style={[styles.fab, ShadowStyle]} onPress={() => navigation.navigate("GenerateTicket")}>
         <CustomIcon name='add' color={AppColors.white} size={30}/>
       </TouchableOpacity>
     </SafeAreaView>

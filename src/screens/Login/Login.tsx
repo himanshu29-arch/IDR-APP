@@ -1,5 +1,5 @@
-import { View, Text, SafeAreaView, StyleSheet, StatusBar } from 'react-native'
-import React, { useState } from 'react'
+import { View, Text, SafeAreaView, StyleSheet, StatusBar, KeyboardAvoidingView, ScrollView, Alert, ToastAndroid } from 'react-native'
+import React, { useDebugValue, useEffect, useState } from 'react'
 import CustomInput from '../../components/customInput'
 import MyText from '../../components/customtext'
 import { ImagePaths } from '../../utils/imagepaths'
@@ -8,68 +8,126 @@ import { AppColors } from '../../utils/colors'
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../utils/Dimensions'
 import CustomIcon from '../../components/customIcon'
 import CustomButton from '../../components/customButton'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from "@hookform/resolvers/yup";
+import { loginValidationSchema } from '../../utils/validationScemas'
+import { useLoginMutation } from '../../services/RTKClient'
+import { useDispatch } from 'react-redux'
+import { signIn } from '../../redux/slices/authSlice'
+import { useToast } from 'react-native-toast-notifications'
+
+
+type prop = { email: string, password: string }
 
 export default function Login() {
-  const [login, setLogin] = useState({
-    email: '',
-    password: ''
-  })
+  const [login ] = useLoginMutation()
+
   const [ischeck, setIsCheck] = useState(false)
   const [showPassword, setShowPassword] = useState(false)
+  const dispatch = useDispatch()
+  const {
+    control,
+    handleSubmit,
+    formState: { errors, isValid },
+  } = useForm({
+    mode: "all",
+    defaultValues: {
+      email: "",
+      password: ""
+    },
+    resolver: yupResolver(loginValidationSchema),
+
+  });
+
+  const toast = useToast();
+
+  
+
+  const onSubmit = (data: prop) => {
+    const { email, password } = data;
+    const body = {
+      email_id: email,
+      password: password
+    }
+
+    login(body)
+      .unwrap()
+      .then((payload) => {
+        toast.show(payload.message, {
+          type: "success"
+        });
+        dispatch(signIn(payload))
+      })
+      .catch((error) =>{ 
+        toast.show(error.data.message, {
+          type: "danger"
+        });
+      });
+  }
   return (
-    <SafeAreaView style={{
-      flex: 1, backgroundColor: "white"
-    }}>
-      <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} />
-      <View style={styles.logobg}>
-        <Image
-          source={ImagePaths.LOGO}
-          style={{ height: 30 }}
-          resizeMode="contain"
-        />
-      </View>
+    <KeyboardAvoidingView style={{ flex: 1 }}>
+      <SafeAreaView style={{
+        flex: 1, backgroundColor: "white"
+      }}>
 
-      <View style={{ marginHorizontal: 20 }}>
-        <MyText fontType="regular" style={{ fontSize: 32, marginBottom: SCREEN_HEIGHT * 0.05 }}>
-          Log in
-        </MyText>
+        <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} />
+        <ScrollView>
+          <View style={styles.logobg}>
+            <Image
+              source={ImagePaths.LOGO}
+              style={{ height: 30 }}
+              resizeMode="contain"
+            />
+          </View>
 
-        <CustomInput
-          value={login.email}
-          onChangeText={(txt) => setLogin({ ...login, email: txt })}
-          placeholder=''
-          label='Email Address'
-          isOutline
-          leftIcon='mail-outline'
-        />
+          <View style={{ marginHorizontal: 20 }}>
+            <MyText fontType="regular" style={{ fontSize: 32, marginBottom: SCREEN_HEIGHT * 0.05 }}>
+              Log in
+            </MyText>
 
-        <CustomInput
-          value={login.password}
-          onChangeText={(txt) => setLogin({ ...login, password: txt })}
-          placeholder=''
-          label='Password'
-          isOutline
-          leftIcon='lock-closed-outline'
-          rightIcon={showPassword ? "eye-outline" : "eye-off-outline"}
-          onRighticonPress={() => setShowPassword(!showPassword)}
-          secureTextEntry={showPassword}
-        />
+            <CustomInput
+              control={control}
+              name="email"
+              placeholder=''
+              label='Email Address'
+              isOutline
+              leftIcon='mail-outline'
+              errors={errors}
+            />
 
-        <View style={styles.conditions}>
-          <CustomIcon
-            name={ischeck ? "checkbox" : "square-outline"}
-            onPress={() => setIsCheck(!ischeck)}
-            color={ischeck ? "#7F265B" : AppColors.black}
-          />
-          <MyText style={{ marginLeft: 10, color: AppColors.iconsGrey }}>Remember me</MyText>
-        </View>
+            <CustomInput
+              control={control}
+              name='password'
+              placeholder=''
+              label='Password'
+              isOutline
+              leftIcon='lock-closed-outline'
+              rightIcon={showPassword ? "eye-outline" : "eye-off-outline"}
+              onRighticonPress={() => setShowPassword(!showPassword)}
+              secureTextEntry={showPassword}
+              errors={errors}
+            />
 
-        <CustomButton 
-          title='Login'
-          onPress={() => {}}
-        />
-      </View>
-    </SafeAreaView>
+            <View style={styles.conditions}>
+              <CustomIcon
+                name={ischeck ? "checkbox" : "square-outline"}
+                onPress={() => setIsCheck(!ischeck)}
+                color={ischeck ? "#7F265B" : AppColors.black}
+              />
+              <MyText style={{ marginLeft: 10, color: AppColors.iconsGrey }}>
+                Remember me
+              </MyText>
+            </View>
+
+            <CustomButton
+              title='Login'
+              onPress={handleSubmit(onSubmit)}
+              isdisabled={!isValid}
+            />
+          </View>
+        </ScrollView>
+      </SafeAreaView>
+    </KeyboardAvoidingView>
   )
 }
 

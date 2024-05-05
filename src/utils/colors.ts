@@ -7,5 +7,6 @@ export const AppColors = {
     bluishgrey: "#E6EBF0",
     white: "#fff",
     black: "#000",
-    InActiveBottomC: "#BFC2FF"
+    InActiveBottomC: "#BFC2FF",
+    red: 'red'
 }

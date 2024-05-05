@@ -1,5 +1,5 @@
 import { View, Text, StatusBar, Image, StyleSheet, FlatList, TouchableOpacity, ScrollView } from 'react-native'
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { ImagePaths } from '../../utils/imagepaths'
 import { AppColors } from '../../utils/colors'
 import MyText from '../../components/customtext'
@@ -7,110 +7,120 @@ import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../utils/Dimensions'
 import CustomIcon from '../../components/customIcon'
 import CustomDropdown from '../../components/customDropdown'
 import { IconsPath } from '../../utils/InconsPath'
+import { useSelector } from 'react-redux'
+import { RootState } from '../../redux/store'
+import { useGetAllClientQuery, useGetAllWorkOrderQuery } from '../../services/RTKClient'
+import Loader from '../../components/Loader'
+import ModalDropdown from '../../components/customDropdown'
 
 export default function Dashboard() {
-  const [select, setSelect] = useState('')
+  const [select, setSelect] = useState({})
+  const { userData } = useSelector((state: RootState) => state.auth);
+  const { data:clientData, isLoading } = useGetAllClientQuery()
+  const { data: workData, isLoading: isLoading1 } = useGetAllWorkOrderQuery()
+
+  useEffect(() => {
+    console.log({workData});
+  },[])
+  
   return (
     <ScrollView>
-            <StatusBar translucent/>
-    <View>
-      <StatusBar translucent backgroundColor='transparent' />
-      <View style={styles.blueContainer}>
-        <Image
-          source={ImagePaths.TOPCIRCLE}
-          style={{ width: 190, marginTop: -65, position: 'absolute' }}
-          resizeMode="contain"
-        />
-        <View style={styles.mainRow}>
-          <View style={styles.row}>
-            <View style={styles.AC}>
-              <MyText fontType="bold" style={{
-                fontSize: 16,
-                color: AppColors.primary,
-              }} >AC</MyText>
+      <StatusBar translucent />
+      <Loader loading={isLoading || isLoading1}/>
+      <View>
+        <StatusBar translucent backgroundColor='transparent' />
+        <View style={styles.blueContainer}>
+          <Image
+            source={ImagePaths.TOPCIRCLE}
+            style={{ width: 190, marginTop: -65, position: 'absolute' }}
+            resizeMode="contain"
+          />
+          <View style={styles.mainRow}>
+            <View style={styles.row}>
+              <View style={styles.AC}>
+                <MyText fontType="bold" style={{
+                  fontSize: 16,
+                  color: AppColors.primary,
+                }} >AC</MyText>
+              </View>
+              <View style={{ marginLeft: 10 }}>
+                <MyText fontType="bold" style={{
+                  fontSize: 16,
+                  color: AppColors.white,
+                }}>Alex Connors</MyText>
+                <MyText style={{
+                  fontSize: 12,
+                  color: AppColors.InActiveBottomC,
+                }}>Super Admin</MyText>
+              </View>
             </View>
-            <View style={{ marginLeft: 10 }}>
-              <MyText fontType="bold" style={{
-                fontSize: 16,
-                color: AppColors.white,
-              }}>Alex Connors</MyText>
-              <MyText style={{
-                fontSize: 12,
-                color: AppColors.InActiveBottomC,
-              }}>Super Admin</MyText>
-            </View>
-          </View>
 
-          <View style={[styles.AC, styles.row]}>
-            <CustomIcon name='notifications-outline' />
+            <View style={[styles.AC, styles.row]}>
+              <CustomIcon name='notifications-outline' />
+            </View>
           </View>
         </View>
+        {/* Card */}
+
+        <View style={[styles.card, { marginTop: -SCREEN_HEIGHT * 0.2 }]}>
+          <MyText fontType="medium" style={{ fontSize: 18, marginVertical: 10 }}>Select Client</MyText>
+          <MyText style={{ fontSize: 14, marginVertical: 10 }}>
+            Lorem Ipsum is simply dummy text of the printing and type setting industry.
+          </MyText>
+
+          <CustomDropdown
+            options={clientData?.data}
+            type="client"
+            defaultOption={""}
+            onSelect={setSelect}
+            isDarker
+          />
+          <MyText fontType="medium" style={{ fontSize: 18 }}>Assignments</MyText>
+
+          <FlatList
+
+            data={[
+            {
+              id: 2,
+              name: 'Open work order',
+              img: IconsPath.Openwork
+            }]}
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            scrollEnabled={false}
+            renderItem={({ item }) =>
+              <View style={styles.assigncontainer}>
+                <MyText style={styles.opentasks}>00</MyText>
+                <View style={{ flexDirection: 'row', alignItems: 'center', }}>
+                  <Image
+                    source={item.img}
+                    style={{ width: 12, height: 12, marginRight: 10 }}
+                  />
+                  <MyText style={{ fontSize: 14 }}>{item.name}</MyText>
+                </View>
+              </View>}
+          />
+        </View>
+        <View style={styles.card}>
+          <MyText fontType="medium" style={{ fontSize: 18 }}>Open Work Order</MyText>
+          <FlatList
+            data={clientData?.data}
+            scrollEnabled={false}
+            renderItem={({ item }) =>
+              <TouchableOpacity style={{
+                backgroundColor: AppColors.lightgrey, padding: 15,
+                borderRadius: 5, justifyContent: 'space-between', flexDirection: 'row',
+                marginVertical: 5
+              }}>
+                <MyText style={{ fontSize: 14 }}>
+                  {item.company_name}
+                </MyText>
+                <CustomIcon name='chevron-forward' />
+              </TouchableOpacity>}
+          />
+        </View>
+
       </View>
-      {/* Card */}
-
-      <View style={[styles.card, {marginTop: -SCREEN_HEIGHT * 0.2}]}>
-        <MyText fontType="medium" style={{ fontSize: 18, marginVertical: 10 }}>Select Client</MyText>
-        <MyText style={{ fontSize: 14, marginVertical: 10 }}>
-          Lorem Ipsum is simply dummy text of the printing and type setting industry.
-        </MyText>
-
-        <CustomDropdown
-          options={["nothing"]}
-          defaultOption='Choose option'
-          onSelect={setSelect}
-          isDarker
-        />
-        <MyText fontType="medium" style={{ fontSize: 18 }}>Assignments</MyText>
-
-        <FlatList
-         
-          data={[{
-            id: 1,
-            name: 'Open tasks',
-            img: IconsPath.Opentasks
-          }, {
-            id: 2,
-            name: 'Open work order',
-            img: IconsPath.Openwork
-          }]}
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          scrollEnabled={false}
-          renderItem={({item}) => 
-            <View style={styles.assigncontainer}>
-          <MyText style={styles.opentasks}>00</MyText>
-          <View style={{ flexDirection: 'row', alignItems: 'center', }}>
-            <Image
-              source={item.img}
-              style={{ width: 12, height: 12, marginRight: 10 }}
-            />
-            <MyText style={{ fontSize: 14 }}>{item.name}</MyText>
-          </View>
-        </View>}
-        />
-      </View>
-     <View style={styles.card}>
-     <MyText fontType="medium" style={{ fontSize: 18 }}>Open Work Order</MyText>
-     <FlatList
-      data={[{
-        id: 1,
-        tickt: "WO1000001853"
-      }]}
-      style={{marginBottom: 200}}
-      renderItem={({item}) => 
-      <TouchableOpacity style={{
-        backgroundColor: AppColors.lightgrey, padding: 15,
-        borderRadius: 5, justifyContent: 'space-between', flexDirection:'row'
-      }}>
-        <MyText style={{fontSize: 14}}>
-          {item.tickt}
-        </MyText>
-        <CustomIcon name='chevron-forward'/>
-      </TouchableOpacity>}
-     />
-     </View>
-
-    </View>
     </ScrollView>
   )
 }
@@ -149,7 +159,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginVertical: 10
-    
+
   },
   row: { marginTop: 50, marginHorizontal: 20, flexDirection: 'row' },
   assigncontainer: {

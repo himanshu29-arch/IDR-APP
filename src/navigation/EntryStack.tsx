@@ -4,11 +4,18 @@ import BottomNavigation from './BottomNavigator';
 import { NavigationContainer } from '@react-navigation/native';
 import Splash from '../screens/Splash/Splash';
 import Login from '../screens/Login/Login';
+import { useSelector } from 'react-redux';
+import { RootState } from '../redux/store';
+import NewWorkOrder from '../screens/WorkOrder/AddTechnician';
+import GenerateTicket from '../screens/WorkOrder/GenerateTicket';
+import AddTechnician from '../screens/WorkOrder/AddTechnician';
+import AddNote from '../screens/WorkOrder/AddNote';
 
 const Stack = createNativeStackNavigator();
 
 export default function EntryStack() {
   const [splash, setSplash] = useState(true);
+  const isLoggedIn = useSelector((state: RootState) => state.auth.isLoggedIn)
 
 
   useEffect(() => {
@@ -26,10 +33,15 @@ export default function EntryStack() {
           splash ?
             <Stack.Screen name="Splash" component={Splash} />
             :
+            isLoggedIn ?
             <>
-             {/* <Stack.Screen name="Login" component={Login} /> */}
-             <Stack.Screen name="BottomNavigation" component={BottomNavigation} />
-             </>
+            <Stack.Screen name="BottomNavigation" component={BottomNavigation} />
+            <Stack.Screen name="GenerateTicket" component={GenerateTicket} />
+            <Stack.Screen name="AddTechnician" component={AddTechnician} />
+            <Stack.Screen name="AddNote" component={AddNote} />
+            </>
+            :
+            <Stack.Screen name="Login" component={Login} />
             
         }
       </Stack.Navigator>
