@@ -10,6 +10,7 @@ import NewWorkOrder from '../screens/WorkOrder/AddTechnician';
 import GenerateTicket from '../screens/WorkOrder/GenerateTicket';
 import AddTechnician from '../screens/WorkOrder/AddTechnician';
 import AddNote from '../screens/WorkOrder/AddNote';
+import ViewWorkOrder from '../screens/WorkOrder/ViewWorkOrder';
 
 const Stack = createNativeStackNavigator();
 
@@ -39,6 +40,8 @@ export default function EntryStack() {
             <Stack.Screen name="GenerateTicket" component={GenerateTicket} />
             <Stack.Screen name="AddTechnician" component={AddTechnician} />
             <Stack.Screen name="AddNote" component={AddNote} />
+            <Stack.Screen name="ViewWorkOrder" component={ViewWorkOrder} />
+            
             </>
             :
             <Stack.Screen name="Login" component={Login} />

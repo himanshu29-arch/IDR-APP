@@ -1,6 +1,7 @@
 import { createApi, fetchBaseQuery } from '@reduxjs/toolkit/query/react';
 import { BASE_URL } from './apiConfig';
 
+
 export const rtkClient = createApi({
   reducerPath: 'rtkClient',
   baseQuery: fetchBaseQuery({
@@ -9,7 +10,9 @@ export const rtkClient = createApi({
       headers.set('Access-Control-Allow-Origin', '*')
       headers.set("Content-type", "application/json; charset=UTF-8")
       const accessToken = getState().auth.userData.token;
+     
       if (accessToken) {
+        console.log(accessToken);
         headers.set('Authorization', `Bearer ${accessToken}`);
       }
       return headers

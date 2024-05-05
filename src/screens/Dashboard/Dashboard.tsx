@@ -13,16 +13,24 @@ import { useGetAllClientQuery, useGetAllWorkOrderQuery } from '../../services/RT
 import Loader from '../../components/Loader'
 import ModalDropdown from '../../components/customDropdown'
 
-export default function Dashboard() {
+export default function Dashboard({navigation}) {
   const [select, setSelect] = useState({})
   const { userData } = useSelector((state: RootState) => state.auth);
   const { data:clientData, isLoading } = useGetAllClientQuery()
-  const { data: workData, isLoading: isLoading1 } = useGetAllWorkOrderQuery()
+  const { data: workOrder, isLoading: isLoading1 } = useGetAllWorkOrderQuery()
+  const[openWorkOrder, setOpenWorkOrder] = useState([])
 
-  useEffect(() => {
-    console.log({workData});
-  },[])
-  
+
+
+ useEffect(() => {
+  if(workOrder?.length !== 0){
+    console.log("==> ",workOrder?.workOrder);
+   const OpenOrder =  workOrder?.workOrder.filter((i) => i.status === "Open");
+   setOpenWorkOrder(OpenOrder)
+  }
+ }, [])
+ 
+ 
   return (
     <ScrollView>
       <StatusBar translucent />
@@ -90,7 +98,7 @@ export default function Dashboard() {
             scrollEnabled={false}
             renderItem={({ item }) =>
               <View style={styles.assigncontainer}>
-                <MyText style={styles.opentasks}>00</MyText>
+                <MyText style={styles.opentasks}>{openWorkOrder?.length}</MyText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                   <Image
                     source={item.img}
@@ -104,16 +112,19 @@ export default function Dashboard() {
         <View style={styles.card}>
           <MyText fontType="medium" style={{ fontSize: 18 }}>Open Work Order</MyText>
           <FlatList
-            data={clientData?.data}
+            data={openWorkOrder}
             scrollEnabled={false}
             renderItem={({ item }) =>
-              <TouchableOpacity style={{
+              <TouchableOpacity
+            onPress={() => navigation.navigate("ViewWorkOrder",{
+              OrderId: item.work_order_id
+            })} style={{
                 backgroundColor: AppColors.lightgrey, padding: 15,
                 borderRadius: 5, justifyContent: 'space-between', flexDirection: 'row',
                 marginVertical: 5
               }}>
                 <MyText style={{ fontSize: 14 }}>
-                  {item.company_name}
+                  {item.client_name}
                 </MyText>
                 <CustomIcon name='chevron-forward' />
               </TouchableOpacity>}
