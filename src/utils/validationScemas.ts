@@ -86,9 +86,7 @@ export const loginValidationSchema = yup.object().shape({
   
 
   export const workorderview = yup.object().shape({
-    ClientName: yup
-    .string()
-    .required("Contact Person name is required"),
+  
     ContactEmail: yup
     .string()
     .email("The Email ID you entered is incorrect.")
@@ -112,4 +110,7 @@ export const loginValidationSchema = yup.object().shape({
     Issue: yup
     .string()
     .required("Issue is required"),
+    ServiceDate: yup
+    .string()
+    .required("Service Date is required"),
   })

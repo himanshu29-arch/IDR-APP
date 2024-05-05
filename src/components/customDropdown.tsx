@@ -43,7 +43,9 @@ const getVal = () => {
     return selectedOption.address_line_one
    } if(type === "status" && selectedOption !== ""){
     return selectedOption
-   } else {
+   } else if(defaultOption !== ""){
+    return defaultOption
+   } else{
     return "Choose Option"
    }
 }

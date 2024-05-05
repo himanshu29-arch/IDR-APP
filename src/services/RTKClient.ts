@@ -35,7 +35,8 @@ export const rtkClient = createApi({
     }),
 
     getAllWorkOrder: builder.query<'', void>({
-      query: () => `work_order/all`
+      query: () => `work_order/all`,
+  
     }),
 
     getWorkOrderByID: builder.query({
@@ -45,6 +46,17 @@ export const rtkClient = createApi({
     getWorkOrderByClientId: builder.query({
       query: (id) => `work_order/by_client/${id?.client_id}`
     }),
+
+    deleteWorkOrder: builder.mutation({
+      query: (id) => ({
+        url:`work_order/by_id/${id?.work_order_id}`,
+        method: 'DELETE',
+        providesTags: ["work_order/all"],
+        invalidatesTags: ["work_order/all"]
+    
+      }),
+    }),
+    
 
     addWorkOrder: builder.mutation({
       query: (body) => ({
@@ -101,5 +113,6 @@ export const {
   useAddTechnicianMutation,
   useAddNoteMutation,
   useGetWorkOrderByIDQuery,
-  useGetWorkOrderByClientIdQuery
+  useGetWorkOrderByClientIdQuery,
+  useDeleteWorkOrderMutation
 } = rtkClient;

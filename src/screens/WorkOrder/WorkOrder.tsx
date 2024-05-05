@@ -1,21 +1,51 @@
-import { View, Text, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, FlatList, ScrollView, TouchableWithoutFeedback } from 'react-native'
+import { View, Text, SafeAreaView, StatusBar, StyleSheet, TouchableOpacity, FlatList, ScrollView, TouchableWithoutFeedback, Alert } from 'react-native'
 import React, { useState } from 'react'
 import { AppColors } from '../../utils/colors'
 import { SCREEN_HEIGHT } from '../../utils/Dimensions'
 import CustomIcon from '../../components/customIcon'
 import MyText from '../../components/customtext'
 import { ShadowStyle } from '../../utils/constants'
-import { useGetAllWorkOrderQuery } from '../../services/RTKClient'
+import { useDeleteWorkOrderMutation, useGetAllWorkOrderQuery } from '../../services/RTKClient'
+import Loader from '../../components/Loader'
 
 export default function WorkOrder({ navigation }) {
-  const { data: workOrder, isLoading: isLoading1 } = useGetAllWorkOrderQuery()
+  const { data: workOrder, isLoading: isLoading1, refetch } = useGetAllWorkOrderQuery()
   const [show, setShow] = useState(false);
   const [selected, setSelected] = useState({})
+  const [deleteWorkOrder, {isLoading: isLoading2}] = useDeleteWorkOrderMutation()
+
+  const showAlert = () => {
+    Alert.alert(
+      'Delete',
+      'Are you confirm to delete this work order?', // <- this part is optional, you can pass an empty string
+      [
+        {text: 'DELETE', onPress: () => onDelete()},
+        {text: 'Cancel', onPress: () => console.log('OK Pressed')},
+      ],
+      {cancelable: false},
+    );
+  }
+
+  const onDelete =() => {
+    console.log("SELECTED +++ ==> ", selected);
+    deleteWorkOrder(selected)
+    .unwrap()
+    .then((payload) => {
+      console.log("Payload", payload);
+      setShow(false)
+      refetch()
+    })
+    .catch((error) => {
+      console.log("Error", error);
+      
+    })
+  } 
   return (
 
 
     <SafeAreaView style={{ backgroundColor: AppColors.white, flex: 1 }}>
       <StatusBar backgroundColor={AppColors.white} barStyle={'dark-content'} translucent={false} />
+  <Loader loading={isLoading1 || isLoading2}/>
       <ScrollView>
         <TouchableWithoutFeedback style={{ marginTop: StatusBar.currentHeight }} onPress={() => {
           setSelected({})
@@ -91,7 +121,7 @@ export default function WorkOrder({ navigation }) {
           <MyText style={{ fontSize: 16, margin: 10 }} fontType="medium">
             Edit record
           </MyText>
-          <MyText style={{ fontSize: 16, margin: 10 }} fontType="medium">
+          <MyText style={{ fontSize: 16, margin: 10 }} fontType="medium" onPress={()=> showAlert()}>
             Delete record
           </MyText>
         </View>

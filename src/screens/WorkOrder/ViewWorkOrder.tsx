@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, SafeAreaView, Pressable, StatusBar } from 'react-native'
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import { AppColors } from '../../utils/colors'
 import { SCREEN_WIDTH } from '../../utils/Dimensions'
 import Loader from '../../components/Loader'
@@ -7,17 +7,20 @@ import CustomIcon from '../../components/customIcon'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { ShadowStyle } from '../../utils/constants'
 import MyText from '../../components/customtext'
-import { useGetWorkOrderByIDQuery } from '../../services/RTKClient'
+import { useGetAllClientQuery, useGetWorkOrderByIDQuery } from '../../services/RTKClient'
 import CustomInput from '../../components/customInput'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
-import { generateTicket } from '../../utils/validationScemas'
+import { generateTicket, workorderview } from '../../utils/validationScemas'
 import CustomDropdown from '../../components/customDropdown'
+import CustomDatePicker from '../../components/customDatepicker'
 
 export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
     const { data, isLoading } = useGetWorkOrderByIDQuery(OrderId)
-
+    const { data: clientData, isLoading: isLoading1 } = useGetAllClientQuery()
+    const [client, setClient] = useState({});
+    const [date, setDate] = useState(Date);
     const {
         control,
         handleSubmit,
@@ -33,26 +36,34 @@ export default function ViewWorkOrder({ navigation, route }) {
             ContactPerson: "",
             ContactPhone: "",
             ContactEmail: "",
-            Issue: ""
+            Issue: "",
+            ServiceDate: ""
         },
 
-        resolver: yupResolver(generateTicket)
+        resolver: yupResolver(workorderview)
     });
 
     useEffect(() => {
-        reset(
-            {
-                WorkOrdertype: data?.workOrder?.client_site,
+        if (typeof data !== "undefined") {
+            setClient(data?.workOrder?.client_name)
+            reset(
+                {
+                    WorkOrdertype: data?.workOrder?.work_order_type,
+                    PONumber: data?.workOrder?.po_number,
+                    ClientSite: data?.workOrder?.client_site,
+                    ContactPerson: data?.workOrder?.contact_person,
+                    ContactPhone: data?.workOrder?.contact_phone_number,
+                    ContactEmail: data?.workOrder?.contact_mail_id,
+                    Issue: data?.workOrder?.issue,
+                    ServiceDate: data?.workOrder?.service_date
 
-                PONumber: "",
-                ClientSite: "",
-                ContactPerson: "",
-                ContactPhone: "",
-                ContactEmail: "",
-                Issue: ""
+                });
+        }
 
-            });
     }, [])
+
+    console.log("HERE IS THE DATA", data);
+
 
 
     return (
@@ -69,24 +80,65 @@ export default function ViewWorkOrder({ navigation, route }) {
                     </MyText>
                 </View>
             </View>
-            <KeyboardAwareScrollView style={{marginTop: 30}}>
+            <KeyboardAwareScrollView style={{ marginTop: 30 }}>
                 <View style={[styles.card, ShadowStyle]}>
                     <MyText fontType='bold'>
                         Select Client
                     </MyText>
                     <View style={{ marginTop: 10 }}>
-                       
+
+                        <CustomDropdown
+                            options={clientData?.data}
+                            type="client"
+                            defaultOption={client}
+                            onSelect={setClient}
+                        />
+
                         <CustomInput
                             control={control}
                             errors={errors}
                             name='WorkOrdertype'
-                            label='Client name'
+                            label='Work Order type'
                         />
                         <CustomInput
                             control={control}
                             errors={errors}
-                            name='WorkOrdertype'
-                            label='WWork order ticket'
+                            name='PONumber'
+                            label='PO Number'
+                        />
+
+                        <CustomInput
+                            control={control}
+                            errors={errors}
+                            name='ClientSite'
+                            label='Client Site'
+                        />
+
+                        <CustomInput
+                            control={control}
+                            errors={errors}
+                            name='ContactPerson'
+                            label='Contact Person'
+                        />
+
+                        <CustomInput
+                            control={control}
+                            errors={errors}
+                            name='ContactPhone'
+                            label='Contact Phone'
+                        />
+
+                        <CustomInput
+                            control={control}
+                            errors={errors}
+                            name='Issue'
+                            label='Issue'
+                        />
+
+                        <CustomDatePicker
+                            setDate={setDate}
+                            date={date}
+                            label="Service Date"
                         />
 
                     </View>
