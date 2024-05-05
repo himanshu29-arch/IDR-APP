@@ -45,7 +45,7 @@ export const loginValidationSchema = yup.object().shape({
       .required("Contact Phone is required"),
       Issue: yup
       .string()
-      .notRequired()
+      .required("Issue is required"),
   });
 
   export const technicianName = yup.object().shape({
@@ -60,10 +60,10 @@ export const loginValidationSchema = yup.object().shape({
       .required("service Request is required"),
       otherDetails: yup
       .string()
-      .notRequired(),
+      .required("Other Details is required"),
       procedures: yup
       .string()
-      .notRequired()
+      .required("Procedures is required"),
   });
 
   export const addNoteSchema = yup.object().shape({
@@ -84,3 +84,32 @@ export const loginValidationSchema = yup.object().shape({
       .required("Deliverable Instructions are required"),
   });
   
+
+  export const workorderview = yup.object().shape({
+    ClientName: yup
+    .string()
+    .required("Contact Person name is required"),
+    ContactEmail: yup
+    .string()
+    .email("The Email ID you entered is incorrect.")
+    .matches(validateEmail, "The Email ID you entered is incorrect.")
+    .required("Email is required"),
+    WorkOrdertype: yup
+    .string()
+    .required("Work Order type is required"),
+    PONumber: yup
+    .string()
+    .required("PO Number is required"),
+    ClientSite: yup
+    .string()
+    .required("Client Site is required"),
+    ContactPerson: yup
+    .string()
+    .required("Contact Person name is required"),
+    ContactPhone: yup
+    .string()
+    .required("Contact Phone is required"),
+    Issue: yup
+    .string()
+    .required("Issue is required"),
+  })

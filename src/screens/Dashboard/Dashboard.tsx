@@ -34,7 +34,7 @@ export default function Dashboard({navigation}) {
  
   return (
     <ScrollView>
-      <StatusBar translucent />
+      <StatusBar translucent={true} />
       <Loader loading={isLoading || isLoading1}/>
       <View>
         <StatusBar translucent backgroundColor='transparent' />

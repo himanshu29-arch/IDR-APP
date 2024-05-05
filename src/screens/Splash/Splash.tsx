@@ -23,7 +23,7 @@ export default function Splash() {
                         resizeMode="contain"
                     />
                 </View>
-                <Text style={styles.txt}>Lorem Ipsum is simply dummy text of the printing and type setting industry.</Text>
+                {/* <Text style={styles.txt}>Lorem Ipsum is simply dummy text of the printing and type setting industry.</Text> */}
             </View>
 
 

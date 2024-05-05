@@ -70,7 +70,6 @@ const getVal = () => {
           transparent={true}
           visible={isVisible}
           onRequestClose={() => setIsVisible(false)}
-
         >
           <View style={styles.container}>
 
@@ -78,7 +77,7 @@ const getVal = () => {
               <Ionicons name='close' color={AppColors.black} size={30} style={{ alignSelf: 'flex-end' }} onPress={() => setIsVisible(false)} />
              <FlatList
               data={options}
-              style={{maxHeight: SCREEN_HEIGHT*0.6}}
+              style={{maxHeight: SCREEN_HEIGHT*0.6, width: SCREEN_WIDTH*0.8}}
               renderItem={({item, index}) =>
                 <TouchableOpacity
               key={index}

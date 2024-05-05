@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, SafeAreaView, Pressable, StatusBar } from 'react-native'
-import React from 'react'
+import React, { useEffect } from 'react'
 import { AppColors } from '../../utils/colors'
 import { SCREEN_WIDTH } from '../../utils/Dimensions'
 import Loader from '../../components/Loader'
@@ -9,15 +9,57 @@ import { ShadowStyle } from '../../utils/constants'
 import MyText from '../../components/customtext'
 import { useGetWorkOrderByIDQuery } from '../../services/RTKClient'
 import CustomInput from '../../components/customInput'
+import { useForm } from 'react-hook-form'
+import { yupResolver } from '@hookform/resolvers/yup'
+import { generateTicket } from '../../utils/validationScemas'
+import CustomDropdown from '../../components/customDropdown'
 
 export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
     const { data, isLoading } = useGetWorkOrderByIDQuery(OrderId)
+    console.log(data?.workOrder?.client_site)
+
+    const {
+        control,
+        handleSubmit,
+        formState: { errors, isValid },
+        setValue,
+        reset
+    } = useForm({
+        mode: "all",
+        defaultValues: {
+            WorkOrdertype: "",
+            PONumber: "",
+            ClientSite: "",
+            ContactPerson: "",
+            ContactPhone: "",
+            ContactEmail: "",
+            Issue: ""
+        },
+
+        resolver: yupResolver(generateTicket)
+    });
+
+    useEffect(() => {
+        reset(
+            {
+                WorkOrdertype: data?.workOrder?.client_site,
+
+                PONumber: "",
+                ClientSite: "",
+                ContactPerson: "",
+                ContactPhone: "",
+                ContactEmail: "",
+                Issue: ""
+
+            });
+    }, [])
+
 
     return (
         <SafeAreaView style={styles.conatiner}>
             <Loader loading={isLoading} />
-            <StatusBar backgroundColor={AppColors.white} barStyle={"dark-content"} translucent={false}/>
+            <StatusBar backgroundColor={AppColors.white} barStyle={"dark-content"} translucent={false} />
             <View style={styles.mainrow}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
                     <Pressable onPress={() => navigation.goBack()} style={{ padding: 5, borderRadius: 50, borderColor: AppColors.iconsGrey, borderWidth: 1 }}>
@@ -28,11 +70,29 @@ export default function ViewWorkOrder({ navigation, route }) {
                     </MyText>
                 </View>
             </View>
-            <KeyboardAwareScrollView>
+            <KeyboardAwareScrollView style={{marginTop: 30}}>
                 <View style={[styles.card, ShadowStyle]}>
-                    <MyText>
-                        {JSON.stringify(data)}
+                    <MyText fontType='bold'>
+                        Select Client
                     </MyText>
+                    <View style={{ marginTop: 10 }}>
+                       
+                        <CustomInput
+                            control={control}
+                            errors={errors}
+                            name='WorkOrdertype'
+                            label='Client name'
+                        />
+                        <CustomInput
+                            control={control}
+                            errors={errors}
+                            name='WorkOrdertype'
+                            label='WWork order ticket'
+                        />
+
+                    </View>
+
+
 
                 </View>
             </KeyboardAwareScrollView>
