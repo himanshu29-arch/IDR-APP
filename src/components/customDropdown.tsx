@@ -23,7 +23,7 @@ type props = {
 }
 const CustomDropdown = ({ options, onSelect, defaultOption, isDarker, label, isDisabled, type }: props) => {
   const [isVisible, setIsVisible] = useState(false);
-  const [selectedOption, setSelectedOption] = useState(defaultOption);
+  const [selectedOption, setSelectedOption] = useState("");
 
   const toggleDropdown = () => {
     if (!isDisabled) {
@@ -37,7 +37,9 @@ const CustomDropdown = ({ options, onSelect, defaultOption, isDarker, label, isD
     setIsVisible(false);
   };
 const getVal = () => {
-  if(type === "client" && selectedOption !== ""){
+  console.log("", selectedOption, defaultOption);
+  
+  if(type === "client" && selectedOption !== "" ){
    return selectedOption.company_name
   } else if(type === "location" && selectedOption !== ""){
     return selectedOption.address_line_one

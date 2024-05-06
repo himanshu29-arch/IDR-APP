@@ -27,7 +27,7 @@ export default function GenerateTicket({ navigation }) {
   const [status, setStatus] = useState("")
   const [location, setLocation] = useState([])
   const { data: clientData, } = useGetAllClientQuery()
-  const { data: locationData, refetch, isError, error } = useGetLocationByClientQuery(select)
+  const { data: locationData, refetch, } = useGetLocationByClientQuery(select)
   const [addWorkOrder, { isLoading }] = useAddWorkOrderMutation()
   const toast = useToast();
   const {

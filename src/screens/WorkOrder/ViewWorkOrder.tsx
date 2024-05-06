@@ -7,7 +7,7 @@ import CustomIcon from '../../components/customIcon'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { ShadowStyle } from '../../utils/constants'
 import MyText from '../../components/customtext'
-import { useGetAllClientQuery, useGetWorkOrderByIDQuery } from '../../services/RTKClient'
+import { useGetAllClientQuery, useGetLocationByClientQuery, useGetWorkOrderByIDQuery } from '../../services/RTKClient'
 import CustomInput from '../../components/customInput'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -19,8 +19,11 @@ export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
     const { data, isLoading } = useGetWorkOrderByIDQuery(OrderId)
     const { data: clientData, isLoading: isLoading1 } = useGetAllClientQuery()
-    const [client, setClient] = useState({});
+    const [client, setClient] = useState<string | object>("");
     const [date, setDate] = useState(Date);
+    const [status, setStatus] = useState("")
+    const [location, setLocation] = useState("")
+    const { data: locationData, refetch, } = useGetLocationByClientQuery(client)
     const {
         control,
         handleSubmit,
@@ -37,15 +40,24 @@ export default function ViewWorkOrder({ navigation, route }) {
             ContactPhone: "",
             ContactEmail: "",
             Issue: "",
-            ServiceDate: ""
+            ServiceDate: "",
+            ContactMail: ""
         },
 
         resolver: yupResolver(workorderview)
     });
 
     useEffect(() => {
+        if (client?.client_id) {
+            refetch();
+        }
+    }, [client?.client_id, refetch]);
+
+    useEffect(() => {
         if (typeof data !== "undefined") {
             setClient(data?.workOrder?.client_name)
+            setStatus(data?.workOrder?.status)
+            setLocation(data?.workOrder?.job_location)
             reset(
                 {
                     WorkOrdertype: data?.workOrder?.work_order_type,
@@ -55,14 +67,14 @@ export default function ViewWorkOrder({ navigation, route }) {
                     ContactPhone: data?.workOrder?.contact_phone_number,
                     ContactEmail: data?.workOrder?.contact_mail_id,
                     Issue: data?.workOrder?.issue,
-                    ServiceDate: data?.workOrder?.service_date
-
+                    ServiceDate: data?.workOrder?.service_date,
+                    ContactMail: data?.workOrder?.contact_mail_id
                 });
         }
 
-    }, [])
+    }, [data])
 
-    console.log("HERE IS THE DATA", data);
+    console.log("HERE IS THE DATA", data?.workOrder?.client_name);
 
 
 
@@ -93,6 +105,15 @@ export default function ViewWorkOrder({ navigation, route }) {
                             defaultOption={client}
                             onSelect={setClient}
                         />
+                        <CustomDropdown
+                            label='Choose Location'
+                            options={locationData?.locations}
+                            type="location"
+                            defaultOption={location}
+                            onSelect={setLocation}
+                            isDisabled={typeof locationData === "undefined"}
+                        />
+
 
                         <CustomInput
                             control={control}
@@ -131,8 +152,22 @@ export default function ViewWorkOrder({ navigation, route }) {
                         <CustomInput
                             control={control}
                             errors={errors}
+                            name='ContactMail'
+                            label='Contact Email'
+                        />
+
+                        <CustomInput
+                            control={control}
+                            errors={errors}
                             name='Issue'
                             label='Issue'
+                        />
+                        <CustomDropdown
+                            label='Status'
+                            options={["Open", "Project Completed"]}
+                            type="status"
+                            defaultOption={status}
+                            onSelect={setStatus}
                         />
 
                         <CustomDatePicker
