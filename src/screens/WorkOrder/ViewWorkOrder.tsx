@@ -178,8 +178,8 @@ export default function ViewWorkOrder({ navigation, route }) {
 
                     </View>
                 </View>
-                <ViewTechnician technicians={data?.workOrder?.technicians}/>
-                <ViewNotes NotesData={data?.workOrder?.notes}/>
+               {data?.workOrder?.technicians.length !== 0 && <ViewTechnician technicians={data?.workOrder?.technicians}/>}
+               {data?.workOrder?.notes.length !== 0 &&  <ViewNotes NotesData={data?.workOrder?.notes}/>}
             </KeyboardAwareScrollView>
         </SafeAreaView>
     )

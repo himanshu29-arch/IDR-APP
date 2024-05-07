@@ -20,7 +20,7 @@ export default function WorkOrder({ navigation }) {
       'Are you confirm to delete this work order?', // <- this part is optional, you can pass an empty string
       [
         {text: 'DELETE', onPress: () => onDelete()},
-        {text: 'Cancel', onPress: () => console.log('OK Pressed')},
+        {text: 'Cancel', onPress: () => setShow(false)},
       ],
       {cancelable: false},
     );
@@ -32,10 +32,11 @@ export default function WorkOrder({ navigation }) {
     .then((payload) => {
       setShow(false)
       refetch()
+      setShow(false)
     })
     .catch((error) => {
       console.log("Error", error);
-      
+      setShow(false)
     })
   } 
 
@@ -118,7 +119,11 @@ export default function WorkOrder({ navigation }) {
       </ScrollView>
       {
         show && <View style={[{ backgroundColor: AppColors.white, paddingVertical: 30, margin: 10, borderRadius: 10, alignItems: 'center' }, ShadowStyle]}>
-          <MyText style={{ fontSize: 16, margin: 10 }} fontType="medium">
+          <MyText style={{ fontSize: 16, margin: 10 }} fontType="medium"
+          onPress={() =>{ navigation.navigate("ViewWorkOrder",{
+            OrderId: selected?.work_order_id
+          }), setShow(false)}} 
+          >
             Edit record
           </MyText>
           <MyText style={{ fontSize: 16, margin: 10 }} fontType="medium" onPress={()=> showAlert()}>
