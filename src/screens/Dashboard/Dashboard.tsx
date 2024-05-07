@@ -32,8 +32,6 @@ export default function Dashboard({navigation}) {
         setOpenWorkOrder([])
       }
     })
-    console.log("===> workorder", workOrder);
-    
   }
 }, [select?.client_id, refetch]);
  

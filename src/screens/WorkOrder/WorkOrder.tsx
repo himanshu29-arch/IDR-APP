@@ -27,11 +27,9 @@ export default function WorkOrder({ navigation }) {
   }
 
   const onDelete =() => {
-    console.log("SELECTED +++ ==> ", selected);
     deleteWorkOrder(selected)
     .unwrap()
     .then((payload) => {
-      console.log("Payload", payload);
       setShow(false)
       refetch()
     })
@@ -40,6 +38,8 @@ export default function WorkOrder({ navigation }) {
       
     })
   } 
+
+  
   return (
 
 

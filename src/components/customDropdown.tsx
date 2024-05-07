@@ -37,8 +37,6 @@ const CustomDropdown = ({ options, onSelect, defaultOption, isDarker, label, isD
     setIsVisible(false);
   };
 const getVal = () => {
-  console.log("", selectedOption, defaultOption);
-  
   if(type === "client" && selectedOption !== "" ){
    return selectedOption.company_name
   } else if(type === "location" && selectedOption !== ""){

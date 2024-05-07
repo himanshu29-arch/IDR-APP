@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, SafeAreaView, Pressable, StatusBar } from 'react-native'
+import { View, Text, StyleSheet, SafeAreaView, Pressable, StatusBar, FlatList } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { AppColors } from '../../utils/colors'
 import { SCREEN_WIDTH } from '../../utils/Dimensions'
@@ -14,6 +14,8 @@ import { yupResolver } from '@hookform/resolvers/yup'
 import { generateTicket, workorderview } from '../../utils/validationScemas'
 import CustomDropdown from '../../components/customDropdown'
 import CustomDatePicker from '../../components/customDatepicker'
+import ViewTechnician from './ViewTecnician'
+import ViewNotes from './ViewNotes'
 
 export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
@@ -74,9 +76,7 @@ export default function ViewWorkOrder({ navigation, route }) {
 
     }, [data])
 
-    console.log("HERE IS THE DATA", data?.workOrder?.client_name);
-
-
+    console.log("CHECK ", data?.workOrder?.notes);
 
     return (
         <SafeAreaView style={styles.conatiner}>
@@ -177,10 +177,9 @@ export default function ViewWorkOrder({ navigation, route }) {
                         />
 
                     </View>
-
-
-
                 </View>
+                <ViewTechnician technicians={data?.workOrder?.technicians}/>
+                <ViewNotes NotesData={data?.workOrder?.notes}/>
             </KeyboardAwareScrollView>
         </SafeAreaView>
     )
