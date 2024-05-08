@@ -7,6 +7,7 @@ import MyText from '../../components/customtext'
 import { ShadowStyle } from '../../utils/constants'
 import { useDeleteWorkOrderMutation, useGetAllWorkOrderQuery } from '../../services/RTKClient'
 import Loader from '../../components/Loader'
+import { useFocusEffect } from '@react-navigation/native'
 
 export default function WorkOrder({ navigation }) {
   const { data: workOrder, isLoading: isLoading1, refetch } = useGetAllWorkOrderQuery()
@@ -39,6 +40,12 @@ export default function WorkOrder({ navigation }) {
       setShow(false)
     })
   } 
+
+  useFocusEffect(
+    React.useCallback(() => {
+      refetch()
+    }, [])
+   );
 
   
   return (

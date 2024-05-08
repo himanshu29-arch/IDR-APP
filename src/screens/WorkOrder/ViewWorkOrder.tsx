@@ -19,10 +19,11 @@ import ViewNotes from './ViewNotes'
 import CustomButton from '../../components/customButton'
 import { getDate, timeFormatter } from '../../utils/helperfunctions'
 import { useToast } from 'react-native-toast-notifications'
+import { useFocusEffect } from '@react-navigation/native'
 
 export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
-    const { data, isLoading, refetch:refetchworkorder } = useGetWorkOrderByIDQuery(OrderId)
+    const { data, isLoading, refetch:refetchworkorder } = useGetWorkOrderByIDQuery(OrderId, {refetchOnMountOrArgChange: true })
     const { data: clientData, isLoading: isLoading1 } = useGetAllClientQuery()
     const [client, setClient] = useState<string | object>("");
     const toast = useToast();
@@ -59,6 +60,12 @@ export default function ViewWorkOrder({ navigation, route }) {
             refetch();
         }
     }, [client?.client_id, refetch]);
+
+    useFocusEffect(
+        React.useCallback(() => {
+          refetchworkorder()
+        }, [])
+       );
 
     useEffect(() => {
         if (typeof data !== "undefined") {
@@ -129,6 +136,11 @@ export default function ViewWorkOrder({ navigation, route }) {
           });
         
     }
+
+    console.log("data?.workOrder?.technicians", data?.workOrder?.technicians);
+    console.log("data?.workOrder?.notes", data?.workOrder?.notes);
+    
+    
 
     return (
         <SafeAreaView style={styles.conatiner}>
@@ -255,8 +267,8 @@ export default function ViewWorkOrder({ navigation, route }) {
 
                     </View>
                 </View>
-               {data?.workOrder?.technicians.length !== 0 && <ViewTechnician technicians={data?.workOrder?.technicians}  refetchworkorder={refetchworkorder}/>}
-               {data?.workOrder?.notes.length !== 0 &&  <ViewNotes NotesData={data?.workOrder?.notes} refetchworkorder={refetchworkorder}/>}
+               {(data?.workOrder?.technicians && data?.workOrder?.technicians.length !== 0) && <ViewTechnician technicians={data?.workOrder?.technicians}  refetchworkorder={refetchworkorder}/>}
+               {(data?.workOrder?.notes &&data?.workOrder?.notes.length !== 0) &&  <ViewNotes NotesData={data?.workOrder?.notes} refetchworkorder={refetchworkorder}/>}
             </KeyboardAwareScrollView>
         </SafeAreaView>
     )

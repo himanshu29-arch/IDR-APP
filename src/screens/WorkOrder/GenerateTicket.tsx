@@ -202,11 +202,13 @@ export default function GenerateTicket({ navigation }) {
               defaultOption={""}
               onSelect={setStatus}
             />
-            <CustomButton
+           <View style={{marginTop: 30}}>
+           <CustomButton
               title='Next'
               onPress={handleSubmit(onsubmit)}
               isdisabled={isDisabled()}
             />
+           </View>
           </View>
         </View>
       </KeyboardAwareScrollView>

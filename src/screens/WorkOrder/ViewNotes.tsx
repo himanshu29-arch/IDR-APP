@@ -22,7 +22,6 @@ export default function ViewNotes({ NotesData, refetchworkorder }) {
 
 
   const onSubmit = () => {
-console.log(notes);
 
 const body = {
   technician_id: notes[0].technician_id,

@@ -128,11 +128,13 @@ export default function AddNote({navigation, route}) {
           />
          
           
-           <CustomButton
+          <View style={{marginTop: 30}}>
+          <CustomButton
         title='Submit'
         onPress={handleSubmit(onsubmit)}
         isdisabled={!isValid}
         />
+          </View>
           </View>
           </View>
           </KeyboardAwareScrollView>

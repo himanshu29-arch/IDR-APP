@@ -130,11 +130,13 @@ addTechnician(body)
           />
          
           
+           <View style={{marginTop: 30}}>
            <CustomButton
         title='Next'
         onPress={handleSubmit(onsubmit)}
         isdisabled={!isValid}
         />
+           </View>
           </View>
           </View>
           </KeyboardAwareScrollView>

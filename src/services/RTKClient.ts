@@ -6,6 +6,7 @@ export const rtkClient = createApi({
   reducerPath: 'rtkClient',
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URL,
+    
     prepareHeaders: (headers, { getState }) => {
       headers.set('Access-Control-Allow-Origin', '*')
       headers.set("Content-type", "application/json; charset=UTF-8")
@@ -17,6 +18,8 @@ export const rtkClient = createApi({
       return headers
     }
   }),
+     
+  refetchOnFocus: true,
   endpoints: (builder) => ({
     login: builder.mutation({
       query: (body) => ({
