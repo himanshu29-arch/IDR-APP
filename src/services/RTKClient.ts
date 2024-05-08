@@ -82,6 +82,15 @@ export const rtkClient = createApi({
       }),
     }),
 
+    updateTicket: builder.mutation({
+      query:(body) =>({
+        url: 'work_order/update_ticket',
+        method: "POST",
+        body:body
+      })
+    })
+
+
     
 
   }),
@@ -114,5 +123,6 @@ export const {
   useAddNoteMutation,
   useGetWorkOrderByIDQuery,
   useGetWorkOrderByClientIdQuery,
-  useDeleteWorkOrderMutation
+  useDeleteWorkOrderMutation,
+  useUpdateTicketMutation
 } = rtkClient;

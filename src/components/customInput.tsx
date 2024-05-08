@@ -27,12 +27,12 @@ type props = {
   errors:any;
   externalValue?:string;
   keyboardType?: KeyboardTypeOptions
-
+  isDisabled?: boolean;
 }
 export default function CustomInput({
   label, placeholder, isOutline,
   rightIcon, leftIcon, onRighticonPress, onLefticonPress,
-  secureTextEntry, rules, name, control, defaultValue, errors, externalValue, keyboardType
+  secureTextEntry, rules, name, control, defaultValue, errors, externalValue, keyboardType, isDisabled
 }: props) {
   return (
     <View style={{ width: '100%', alignSelf: 'center' }}>
@@ -61,6 +61,7 @@ export default function CustomInput({
               style={[styles.default]}
               secureTextEntry={secureTextEntry}
               keyboardType={keyboardType}
+              editable={!isDisabled}
             />
           )}
 

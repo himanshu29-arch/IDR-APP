@@ -75,7 +75,8 @@ import { getDate } from "../utils/helperfunctions";
     date: Date;
     maximumDate?: Date;
     minimumDate?: Date;
-    isSmall?: boolean
+    isSmall?: boolean;
+    isDisabled:boolean;
     // control: Control<FieldValues, any>;
     // rules?: Omit<RegisterOptions<FieldValues>, 'valueAsNumber' | 'valueAsDate' | 'setValueAs' | 'disabled'>,
     // name: string;
@@ -96,7 +97,8 @@ import { getDate } from "../utils/helperfunctions";
     date,
     maximumDate,
     minimumDate,
-    isSmall
+    isSmall,
+    isDisabled
 
   }: props) {
     const [mode, setMode] = useState<datetypes>(datetypes.date);
@@ -120,9 +122,13 @@ import { getDate } from "../utils/helperfunctions";
   
     return (
       <>
-        <TouchableOpacity
+        <Pressable
           style={{ marginVertical: 8, }}
-          onPress={() => showDatePicker("date")}
+          onPress={() => {
+            if(!isDisabled){
+              showDatePicker("date")
+            }
+          }}
   
         >
           {label && (
@@ -171,7 +177,7 @@ import { getDate } from "../utils/helperfunctions";
             </View>
           </View>
           {touched && errors && <MyText style={styles.err}>{errors}</MyText>}
-        </TouchableOpacity>
+        </Pressable>
 
         <DateTimePickerModal
           isVisible={isDatePickerVisible}

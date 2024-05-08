@@ -7,7 +7,7 @@ import CustomIcon from '../../components/customIcon'
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 import { ShadowStyle } from '../../utils/constants'
 import MyText from '../../components/customtext'
-import { useGetAllClientQuery, useGetLocationByClientQuery, useGetWorkOrderByIDQuery } from '../../services/RTKClient'
+import { useGetAllClientQuery, useGetLocationByClientQuery, useGetWorkOrderByIDQuery, useUpdateTicketMutation } from '../../services/RTKClient'
 import CustomInput from '../../components/customInput'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from '@hookform/resolvers/yup'
@@ -16,16 +16,22 @@ import CustomDropdown from '../../components/customDropdown'
 import CustomDatePicker from '../../components/customDatepicker'
 import ViewTechnician from './ViewTecnician'
 import ViewNotes from './ViewNotes'
+import CustomButton from '../../components/customButton'
+import { getDate, timeFormatter } from '../../utils/helperfunctions'
+import { useToast } from 'react-native-toast-notifications'
 
 export default function ViewWorkOrder({ navigation, route }) {
     const { OrderId } = route.params
-    const { data, isLoading } = useGetWorkOrderByIDQuery(OrderId)
+    const { data, isLoading, refetch:refetchworkorder } = useGetWorkOrderByIDQuery(OrderId)
     const { data: clientData, isLoading: isLoading1 } = useGetAllClientQuery()
     const [client, setClient] = useState<string | object>("");
+    const toast = useToast();
     const [date, setDate] = useState(Date);
     const [status, setStatus] = useState("")
     const [location, setLocation] = useState("")
+    const [ticket, setTicket] = useState(false)
     const { data: locationData, refetch, } = useGetLocationByClientQuery(client)
+    const [updateTicket, {isLoading: isLoading2}] = useUpdateTicketMutation()
     const {
         control,
         handleSubmit,
@@ -40,10 +46,9 @@ export default function ViewWorkOrder({ navigation, route }) {
             ClientSite: "",
             ContactPerson: "",
             ContactPhone: "",
-            ContactEmail: "",
             Issue: "",
             ServiceDate: "",
-            ContactMail: ""
+            ContactEmail: "",
         },
 
         resolver: yupResolver(workorderview)
@@ -69,18 +74,65 @@ export default function ViewWorkOrder({ navigation, route }) {
                     ContactPhone: data?.workOrder?.contact_phone_number,
                     ContactEmail: data?.workOrder?.contact_mail_id,
                     Issue: data?.workOrder?.issue,
-                    ServiceDate: data?.workOrder?.service_date,
-                    ContactMail: data?.workOrder?.contact_mail_id
+                    ServiceDate: data?.workOrder?.service_date
                 });
         }
 
     }, [data])
 
-    console.log("CHECK ", data?.workOrder?.notes);
+
+    const onSubmit = (info) => {
+        const { WorkOrdertype,
+        PONumber,
+        ClientSite,
+        ContactPerson,
+        ContactPhone,
+        ContactEmail,
+        Issue,
+        ServiceDate,
+        } = info;
+      
+        const body = {
+            work_order_id: OrderId,
+            client_name: typeof client === "string" ? client : client?.company_name,
+            location_id: typeof location === "string"? data?.workOrder?.location_id : location?.location_id,
+            client_id: typeof client === "string" ? data?.workOrder?.client_id :client?.client_id,
+            work_order_type: WorkOrdertype,
+            generated_date: getDate(new Date()),
+            generated_time: timeFormatter(new Date()),
+            po_number: PONumber,
+            client_site: ClientSite,
+            job_location: typeof location === "string"? location : location?.address_line_one,
+            service_date: ServiceDate,
+            contact_person: ContactPerson,
+            contact_phone_number: ContactPhone,
+            contact_mail_id:ContactEmail,
+            issue: Issue, 
+            status: status
+          }
+
+          console.log("BODY ===> ", body);
+        //   return
+          updateTicket(body)
+          .unwrap()
+          .then((payload) => {
+            refetchworkorder()
+            setTicket(false)
+            toast.show(payload.message, {
+              type: "success"
+            });
+          })
+          .catch((error) => {
+            toast.show(error.data.message, {
+              type: "danger"
+            });
+          });
+        
+    }
 
     return (
         <SafeAreaView style={styles.conatiner}>
-            <Loader loading={isLoading} />
+            <Loader loading={isLoading || isLoading1 || isLoading2} />
             <StatusBar backgroundColor={AppColors.white} barStyle={"dark-content"} translucent={false} />
             <View style={styles.mainrow}>
                 <View style={{ flexDirection: 'row', alignItems: 'center' }}>
@@ -94,9 +146,23 @@ export default function ViewWorkOrder({ navigation, route }) {
             </View>
             <KeyboardAwareScrollView style={{ marginTop: 30 }}>
                 <View style={[styles.card, ShadowStyle]}>
-                    <MyText fontType='bold'>
-                        Select Client
+                    <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+                    <MyText fontType='bold' style={{fontSize: 22}}>
+                        Ticket
                     </MyText>
+                    
+                   { ticket ?
+                     <CustomButton
+                     title={"Submit"}
+                     onPress={handleSubmit(onSubmit)}
+                     />
+                     :
+                     <CustomButton
+                     title={"Edit"}
+                     onPress={() => setTicket(true)}
+                     />
+                   }
+                    </View>
                     <View style={{ marginTop: 10 }}>
 
                         <CustomDropdown
@@ -104,6 +170,7 @@ export default function ViewWorkOrder({ navigation, route }) {
                             type="client"
                             defaultOption={client}
                             onSelect={setClient}
+                            isDisabled={!ticket}
                         />
                         <CustomDropdown
                             label='Choose Location'
@@ -111,7 +178,8 @@ export default function ViewWorkOrder({ navigation, route }) {
                             type="location"
                             defaultOption={location}
                             onSelect={setLocation}
-                            isDisabled={typeof locationData === "undefined"}
+                            isDisabled={typeof locationData === "undefined" || !ticket}
+                            
                         />
 
 
@@ -120,12 +188,14 @@ export default function ViewWorkOrder({ navigation, route }) {
                             errors={errors}
                             name='WorkOrdertype'
                             label='Work Order type'
+                            isDisabled={!ticket}
                         />
                         <CustomInput
                             control={control}
                             errors={errors}
                             name='PONumber'
                             label='PO Number'
+                            isDisabled={!ticket}
                         />
 
                         <CustomInput
@@ -133,6 +203,7 @@ export default function ViewWorkOrder({ navigation, route }) {
                             errors={errors}
                             name='ClientSite'
                             label='Client Site'
+                            isDisabled={!ticket}
                         />
 
                         <CustomInput
@@ -140,6 +211,7 @@ export default function ViewWorkOrder({ navigation, route }) {
                             errors={errors}
                             name='ContactPerson'
                             label='Contact Person'
+                            isDisabled={!ticket}
                         />
 
                         <CustomInput
@@ -147,13 +219,15 @@ export default function ViewWorkOrder({ navigation, route }) {
                             errors={errors}
                             name='ContactPhone'
                             label='Contact Phone'
+                            isDisabled={!ticket}
                         />
 
                         <CustomInput
                             control={control}
                             errors={errors}
-                            name='ContactMail'
+                            name='ContactEmail'
                             label='Contact Email'
+                            isDisabled={!ticket}
                         />
 
                         <CustomInput
@@ -161,6 +235,7 @@ export default function ViewWorkOrder({ navigation, route }) {
                             errors={errors}
                             name='Issue'
                             label='Issue'
+                            isDisabled={!ticket}
                         />
                         <CustomDropdown
                             label='Status'
@@ -168,12 +243,14 @@ export default function ViewWorkOrder({ navigation, route }) {
                             type="status"
                             defaultOption={status}
                             onSelect={setStatus}
+                            isDisabled={!ticket}
                         />
 
                         <CustomDatePicker
                             setDate={setDate}
                             date={date}
                             label="Service Date"
+                            isDisabled={!ticket}
                         />
 
                     </View>

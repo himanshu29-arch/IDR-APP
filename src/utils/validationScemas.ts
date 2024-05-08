@@ -113,7 +113,4 @@ export const workorderview = yup.object().shape({
   ServiceDate: yup
     .string()
     .required("Service Date is required"),
-    ContactMail: yup
-    .string()
-    .required("Service Date is required"),
 })
