@@ -120,11 +120,13 @@ export default function Login() {
               </MyText>
             </View>
 
-            <CustomButton
+           <View style={{marginTop: 30}}>
+           <CustomButton
               title='Login'
               onPress={handleSubmit(onSubmit)}
               isdisabled={!isValid}
             />
+           </View>
           </View>
         </ScrollView>
       </SafeAreaView>

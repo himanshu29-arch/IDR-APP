@@ -4,25 +4,75 @@ import { AppColors } from '../../utils/colors'
 import { SCREEN_WIDTH } from '../../utils/Dimensions'
 import { ShadowStyle } from '../../utils/constants'
 import MyText from '../../components/customtext'
+import CustomButton from '../../components/customButton'
+import { useUpdateNotesMutation } from '../../services/RTKClient'
+import { useToast } from 'react-native-toast-notifications'
 
-export default function ViewNotes({ NotesData }) {
-  const [notes, setNotes] = useState([])
-  
+export default function ViewNotes({ NotesData, refetchworkorder }) {
+  const [notes, setNotes] = useState(NotesData)
+  const [notesEdit, setNotesEdit] = useState(false)
+  const [updateNotes, {isLoading}] = useUpdateNotesMutation()
+  const toast = useToast();
 
   const handleChange = (val, key, index) => {
-    const newData = [...techniciansdata];
+    const newData = [...notes];
     newData[index] = { ...newData[index], [key]: val };
     setNotes(newData);
   }
 
-  useEffect(()=>{ setNotes(NotesData)},[])
+
+  const onSubmit = () => {
+console.log(notes);
+
+const body = {
+  technician_id: notes[0].technician_id,
+  work_order_id: notes[0].work_order_id,
+  technician_name: notes[0].technician_name,
+  project_manager: notes[0].project_manager,
+  service_request: notes[0].service_request,
+  other_details: notes[0].other_details,  //optional
+  procedures: notes[0].procedures, //optional
+  note_id: notes[0].note_id
+
+}
+
+    updateNotes(body)
+    .unwrap()
+    .then((payload) => {
+     refetchworkorder()
+      setNotesEdit(false)
+      toast.show(payload.message, {
+        type: "success"
+      });
+    })
+    .catch((error) => {
+      toast.show(error.data.message, {
+        type: "danger"
+      });
+    });
+
+  }
+
 
     return (
         <View>
             <View style={[styles.card, ShadowStyle]}>
-                <MyText fontType='bold'>
-                    Notes Information
-                </MyText>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <MyText fontType='bold' style={{fontSize: 22}}>
+                        Notes Information
+                    </MyText>
+                    { notesEdit ?
+                     <CustomButton
+                     title={"Submit"}
+                     onPress={() => onSubmit()}
+                     />
+                     :
+                     <CustomButton
+                     title={"Edit"}
+                     onPress={() => setNotesEdit(true)}
+                     />
+                   }
+                    </View>
                 <View style={{ marginTop: 10 }}>
                     <FlatList
                         scrollEnabled={false}
@@ -33,8 +83,9 @@ export default function ViewNotes({ NotesData }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.parts}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "parts", index)}
                                         style={[styles.default]}
+                                        editable={notesEdit}
                                     />
                                 </View>
 
@@ -42,8 +93,9 @@ export default function ViewNotes({ NotesData }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.labeling_methodology}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "labeling_methodology", index)}
                                         style={[styles.default]}
+                                        editable={notesEdit}
                                     />
                                 </View>
 
@@ -51,8 +103,9 @@ export default function ViewNotes({ NotesData }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.equipment_installation}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "equipment_installation", index)}
                                         style={[styles.default]}
+                                        editable={notesEdit}
                                     />
                                 </View>
 
@@ -60,8 +113,9 @@ export default function ViewNotes({ NotesData }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.required_deliverables}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "required_deliverables", index)}
                                         style={[styles.default]}
+                                        editable={notesEdit}
                                     />
                                 </View>
 
@@ -69,8 +123,9 @@ export default function ViewNotes({ NotesData }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.deliverable_instructions}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "deliverable_instructions", index)}
                                         style={[styles.default]}
+                                        editable={notesEdit}
                                     />
                                 </View>
 

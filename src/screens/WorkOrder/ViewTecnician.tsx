@@ -4,10 +4,15 @@ import { AppColors } from '../../utils/colors'
 import { SCREEN_WIDTH } from '../../utils/Dimensions'
 import { ShadowStyle } from '../../utils/constants'
 import MyText from '../../components/customtext'
+import CustomButton from '../../components/customButton'
+import { useUpdateTechnicianMutation } from '../../services/RTKClient'
+import { useToast } from 'react-native-toast-notifications'
 
-export default function ViewTechnician({ technicians }) {
-  const [techniciansdata, setTechniciansdata] = useState([])
-  
+export default function ViewTechnician({ technicians, refetchworkorder }) {
+  const [techniciansdata, setTechniciansdata] = useState(technicians)
+  const [technicianEdit, setTechnicianEdit] = useState(false)
+  const [updateTechnician, {isLoading}] = useUpdateTechnicianMutation()
+  const toast = useToast();
 
   const handleChange = (val, key, index) => {
     const newData = [...techniciansdata];
@@ -15,14 +20,58 @@ export default function ViewTechnician({ technicians }) {
     setTechniciansdata(newData);
   }
 
-  useEffect(()=>{ setTechniciansdata(technicians)},[])
+  const onSubmit = () => {
+    console.log(techniciansdata);
+  const body = {
+      technician_id: techniciansdata[0]?.technician_id,
+      work_order_id: techniciansdata[0]?.work_order_id,
+      technician_name: techniciansdata[0]?.technician_name,
+      project_manager: techniciansdata[0]?.project_manager,
+      service_request: techniciansdata[0]?.service_request,
+      other_details: techniciansdata[0]?.other_details, 
+      procedures: techniciansdata[0]?.procedures
+    }
+// console.log("BODY", techniciansdata[0]);
+
+// return
+
+    updateTechnician(body)
+    .unwrap()
+    .then((payload) => {
+     refetchworkorder()
+      setTechnicianEdit(false)
+      toast.show(payload.message, {
+        type: "success"
+      });
+    })
+    .catch((error) => {
+      toast.show(error.data.message, {
+        type: "danger"
+      });
+    });
+
+  }
+
 
     return (
         <View>
             <View style={[styles.card, ShadowStyle]}>
-                <MyText fontType='bold'>
-                    Technician Information
-                </MyText>
+            <View style={{flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center'}}>
+            <MyText fontType='bold' style={{fontSize: 22}}>
+                        Technicians Information
+                    </MyText>
+                    { technicianEdit ?
+                     <CustomButton
+                     title={"Submit"}
+                     onPress={() => onSubmit()}
+                     />
+                     :
+                     <CustomButton
+                     title={"Edit"}
+                     onPress={() => setTechnicianEdit(true)}
+                     />
+                   }
+                    </View>
                 <View style={{ marginTop: 10 }}>
                     <FlatList
                         scrollEnabled={false}
@@ -33,8 +82,9 @@ export default function ViewTechnician({ technicians }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.technician_name}
-                                        onChangeText={() => { }}
+                                        onChangeText={(txt: string) => handleChange(txt, "technician_name", index)}
                                         style={[styles.default]}
+                                        editable={technicianEdit}
                                     />
                                 </View>
 
@@ -44,6 +94,7 @@ export default function ViewTechnician({ technicians }) {
                                         value={item.project_manager}
                                         onChangeText={(txt: string) => handleChange(txt, "project_manager", index)}
                                         style={[styles.default]}
+                                        editable={technicianEdit}
                                     />
                                 </View>
 
@@ -51,8 +102,9 @@ export default function ViewTechnician({ technicians }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.service_request}
-                                        onChangeText={() => { }}
+                                        onChangeText={(txt: string) => handleChange(txt, "service_request", index)}
                                         style={[styles.default]}
+                                        editable={technicianEdit}
                                     />
                                 </View>
 
@@ -60,8 +112,9 @@ export default function ViewTechnician({ technicians }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.procedures}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "procedures", index)}
                                         style={[styles.default]}
+                                        editable={technicianEdit}
                                     />
                                 </View>
 
@@ -69,8 +122,9 @@ export default function ViewTechnician({ technicians }) {
                                 <View style={[styles.viewcontainer, styles.outlined]}>
                                     <TextInput 
                                         value={item.other_details}
-                                        onChangeText={() => { }}
+                                         onChangeText={(txt: string) => handleChange(txt, "other_details", index)}
                                         style={[styles.default]}
+                                        editable={technicianEdit}
                                     />
                                 </View>
                             </View>}
