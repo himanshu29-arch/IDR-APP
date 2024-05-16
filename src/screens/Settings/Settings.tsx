@@ -41,7 +41,7 @@ const Logout = () => {
               </View>
 
             <View style={[styles.AC]}>
-              <CustomIcon name='notifications-outline' />
+            <CustomIcon name='notifications-outline' onPress={() => navigation.navigate("Notifications")}/>
             </View>
           </View>
         </View>

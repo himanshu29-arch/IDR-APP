@@ -1,11 +1,11 @@
-import { View, Text, StyleSheet, StatusBar, Image } from 'react-native'
-import React from 'react'
+import { View, Text, StyleSheet, StatusBar, Image, Linking } from 'react-native'
+import React, { useEffect } from 'react'
 import { AppColors } from '../../utils/colors'
 import { ImagePaths } from '../../utils/imagepaths'
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from '../../utils/Dimensions'
 import { Fonts } from '../../utils/constants'
+export default function Splash({navigation}) {
 
-export default function Splash() {
     return (
         <View style={styles.container}>
             <StatusBar translucent backgroundColor='transparent' />

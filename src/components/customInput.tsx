@@ -62,6 +62,7 @@ export default function CustomInput({
               secureTextEntry={secureTextEntry}
               keyboardType={keyboardType}
               editable={!isDisabled}
+              placeholderTextColor={AppColors.grey}
             />
           )}
 
@@ -84,8 +85,8 @@ const styles = StyleSheet.create({
   default: {
     width: '85%',
     borderRadius: 5,
-
-    padding: 10
+    padding: 10,
+    color: AppColors.black
   },
   outlined: {
     borderWidth: 1,

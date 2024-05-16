@@ -10,8 +10,8 @@ import CustomIcon from '../../components/customIcon'
 import CustomButton from '../../components/customButton'
 import { useForm } from 'react-hook-form'
 import { yupResolver } from "@hookform/resolvers/yup";
-import { loginValidationSchema } from '../../utils/validationScemas'
-import { useLoginMutation } from '../../services/RTKClient'
+import { loginValidationSchema, resetPasswordScema } from '../../utils/validationScemas'
+import { useResetPasswordMutation } from '../../services/RTKClient'
 import { useDispatch } from 'react-redux'
 import { signIn } from '../../redux/slices/authSlice'
 import { useToast } from 'react-native-toast-notifications'
@@ -20,27 +20,38 @@ import Loader from '../../components/Loader'
 
 type prop = { email: string, password: string }
 
-export default function Login({navigation}) {
-  const [login, { isLoading }] = useLoginMutation()
+export default function ResetPassword({navigation, route}) {
+  const [resetPassword, { isLoading }] = useResetPasswordMutation()
 
-  const [ischeck, setIsCheck] = useState(false)
+const {userEmail} = route?.params;
+console.log("USER EMAIL FROM RESET", userEmail);
+
   const [showPassword, setShowPassword] = useState(false)
-  const dispatch = useDispatch()
+  const [showCPassword, setShowCPassword] = useState(false)
+
   const {
     control,
     handleSubmit,
+    reset,
     formState: { errors, isValid },
   } = useForm({
     mode: "all",
     defaultValues: {
       email: "",
-      password: ""
+      password: "",
+      confirmPassword:"",
     },
-    resolver: yupResolver(loginValidationSchema),
+    resolver: yupResolver(resetPasswordScema),
 
   });
 
   const toast = useToast();
+
+  useEffect(()=>{
+    reset({
+      email: userEmail
+    })
+  },[])
 
 
 
@@ -50,16 +61,20 @@ export default function Login({navigation}) {
       email_id: email,
       password: password
     }
-
-    login(body)
+    console.log(body);
+  
+    resetPassword(body)
       .unwrap()
       .then((payload) => {
+        console.log("PAYLOAD", payload);
+        navigation.navigate("Login")
         toast.show(payload.message, {
           type: "success"
         });
-        dispatch(signIn({ payload: payload, rememberMe: ischeck }))
       })
-      .catch((error) => {
+      .catch((error: any) => {
+        console.log("ERROR", error);
+        
         toast.show(error.data.message, {
           type: "danger"
         });
@@ -83,7 +98,7 @@ export default function Login({navigation}) {
 
           <View style={{ marginHorizontal: 20 }}>
             <MyText fontType="regular" style={{ fontSize: 32, marginBottom: SCREEN_HEIGHT * 0.05 }}>
-              Log in
+              Reset Password
             </MyText>
 
             <CustomInput
@@ -109,6 +124,19 @@ export default function Login({navigation}) {
               errors={errors}
             />
 
+      <CustomInput
+              control={control}
+              name='confirmPassword'
+              placeholder='Confirm Password'
+              label='Confirm Password'
+              isOutline
+              leftIcon='lock-closed-outline'
+              rightIcon={showCPassword ? "eye-outline" : "eye-off-outline"}
+              onRighticonPress={() => setShowCPassword(!showCPassword)}
+              secureTextEntry={showPassword}
+              errors={errors}
+            />
+
             {/* <View style={styles.conditions}>
               <CustomIcon
                 name={ischeck ? "checkbox" : "square-outline"}
@@ -119,13 +147,11 @@ export default function Login({navigation}) {
                 Remember me
               </MyText>
             </View> */}
-            <MyText style={{ fontSize: 16,margin: 10, color: AppColors.primary, alignSelf: 'flex-end' }} onPress={() => navigation.navigate("Forgotpassword")}>
-                Forgot password?
-              </MyText>
+        
 
            <View style={{marginTop: 30}}>
            <CustomButton
-              title='Login'
+              title='Submit'
               onPress={handleSubmit(onSubmit)}
               isdisabled={!isValid}
             />

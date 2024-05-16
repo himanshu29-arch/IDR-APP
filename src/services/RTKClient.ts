@@ -21,6 +21,7 @@ export const rtkClient = createApi({
      
   refetchOnFocus: true,
   endpoints: (builder) => ({
+  
     login: builder.mutation({
       query: (body) => ({
         url: 'users/login',
@@ -28,6 +29,23 @@ export const rtkClient = createApi({
         body: body,
       }),
     }),
+
+    forgotpassword: builder.mutation({
+      query: (body) => ({
+        url: 'users/forgot_password',
+        method: 'POST',
+        body: body,
+      }),
+    }),
+
+    resetPassword: builder.mutation({
+      query: (body) => ({
+        url: 'users/set_password',
+        method: 'PATCH',
+        body: body,
+      }),
+    }),
+
 
     getLocationByClient: builder.query({
       query: (id: object)  => `location/${id?.client_id}`
@@ -145,5 +163,7 @@ export const {
   useDeleteWorkOrderMutation,
   useUpdateTicketMutation,
   useUpdateTechnicianMutation,
-  useUpdateNotesMutation
+  useUpdateNotesMutation,
+  useForgotpasswordMutation,
+  useResetPasswordMutation
 } = rtkClient;

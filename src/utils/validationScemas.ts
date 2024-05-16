@@ -21,6 +21,38 @@ export const loginValidationSchema = yup.object().shape({
     .required("Password is required"),
 });
 
+export const resetPasswordScema = yup.object().shape({
+  email: yup
+    .string()
+    .email("The Email ID you entered is incorrect.")
+    .matches(validateEmail, "The Email ID you entered is incorrect.")
+    .required("Email is required"),
+  password: yup
+    .string()
+    //   .min(8, ({ min }) => `password must be minimum ${min} characters`)
+    //   .matches(passwordregsm, `password must have at least one small letter`)
+    //   .matches(passwordregcap, `password must have at least one capital letter`)
+    //   .matches(passwordnum, `password must have at least one number`)
+    //   .matches(passwordspl, `password must have at least one special characters`)
+    //   .max(
+    //     12,
+    //     ({ max }) => `Has at least 8 characters (no spaces)\nHas letters, numbers, and special characters`,
+    //   )
+    .required("Password is required"),
+    confirmPassword: yup
+    .string()
+    .oneOf([yup.ref("password")], "Passwords do not match")
+    .required("Confirm password is required"),
+});
+
+export const forgotPasswordScema = yup.object().shape({
+  email: yup
+    .string()
+    .email("The Email ID you entered is incorrect.")
+    .matches(validateEmail, "The Email ID you entered is incorrect.")
+    .required("Email is required")
+});
+
 
 export const generateTicket = yup.object().shape({
   ContactEmail: yup

@@ -69,7 +69,7 @@ export default function Dashboard({navigation}) {
             </View>
 
             <View style={[styles.AC, styles.row]}>
-              <CustomIcon name='notifications-outline' />
+              <CustomIcon name='notifications-outline' onPress={() => navigation.navigate("Notifications")}/>
             </View>
           </View>
         </View>
