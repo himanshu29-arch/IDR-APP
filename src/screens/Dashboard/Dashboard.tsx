@@ -22,18 +22,21 @@ export default function Dashboard({navigation}) {
 
 
  useEffect(() => {
-  if (select?.client_id) {
+  // if (select?.client_id) {
     refetch()
-    .then(()=>{
-      if(workOrder?.workorders?.length !== 0){
-       const OpenOrder =  workOrder?.workorders.filter((i) => i.status === "Open");
+    .then((res)=>{
+console.log("RES ==> ", res.data);
+
+      if(res?.data?.workorders?.length !== 0){
+       const OpenOrder =  res?.data?.workorders.filter((i) => i.status === "Open");
        setOpenWorkOrder(OpenOrder)
+
       } else {
         setOpenWorkOrder([])
       }
     })
-  }
-}, [select?.client_id, refetch]);
+  // }
+}, [select, refetch]);
  
  
   return (
@@ -106,7 +109,7 @@ export default function Dashboard({navigation}) {
             scrollEnabled={false}
             renderItem={({ item }) =>
               <View style={styles.assigncontainer}>
-                <MyText style={styles.opentasks}>{item?.id === 1 ? typeof openWorkOrder?.length === "undefined" ? 0 : openWorkOrder?.length : workOrder?.workorders?.length}</MyText>
+                <MyText style={styles.opentasks}>{item?.id === 1 ? typeof openWorkOrder?.length === "undefined" ? 0 : openWorkOrder?.length : typeof workOrder?.workorders?.length === "undefined" ? "0": workOrder?.workorders?.length}</MyText>
                 <View style={{ flexDirection: 'row', alignItems: 'center', }}>
                   <Image
                     source={item.img}
