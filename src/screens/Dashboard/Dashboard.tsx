@@ -22,6 +22,8 @@ export default function Dashboard({navigation}) {
 
 
  useEffect(() => {
+  console.log(userData);
+  
   // if (select?.client_id) {
     refetch()
     .then((res)=>{
@@ -63,11 +65,11 @@ console.log("RES ==> ", res.data);
                 <MyText fontType="bold" style={{
                   fontSize: 16,
                   color: AppColors.white,
-                }}>Alex Connors</MyText>
+                }}>{userData?.user?.first_name} {userData?.user?.last_name}</MyText>
                 <MyText style={{
                   fontSize: 12,
                   color: AppColors.InActiveBottomC,
-                }}>Super Admin</MyText>
+                }}>{userData?.user?.user_type}</MyText>
               </View>
             </View>
 

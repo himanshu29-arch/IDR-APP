@@ -11,7 +11,6 @@ export const rtkClient = createApi({
       headers.set('Access-Control-Allow-Origin', '*')
       headers.set("Content-type", "application/json; charset=UTF-8")
       const accessToken = getState().auth.userData.token;
-     
       if (accessToken) {
         headers.set('Authorization', `Bearer ${accessToken}`);
       }
