@@ -378,13 +378,15 @@ export default function WorkOrder({ navigation }) {
           >
             Edit record
           </MyText> */}
-          <MyText
-            style={{ fontSize: 16, marginTop: hp(2) }}
-            fontType="medium"
-            onPress={() => showAlert()}
-          >
-            Delete record
-          </MyText>
+          {userData?.user?.user_type == "Admin" ? (
+            <MyText
+              style={{ fontSize: 16, marginTop: hp(2) }}
+              fontType="medium"
+              onPress={() => showAlert()}
+            >
+              Delete record
+            </MyText>
+          ) : null}
         </View>
       )}
 

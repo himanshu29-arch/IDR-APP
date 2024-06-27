@@ -323,20 +323,25 @@ export default function Dashboard({ navigation }) {
         {/* Card */}
 
         <View style={[styles.card, { marginTop: -SCREEN_HEIGHT * 0.2 }]}>
-          <MyText
-            fontType="medium"
-            style={{ fontSize: 18, marginVertical: 10 }}
-          >
-            Select Client
-          </MyText>
+          {userData?.user?.user_type === "Admin" ? (
+            <>
+              <MyText
+                fontType="medium"
+                style={{ fontSize: 18, marginVertical: 10 }}
+              >
+                Select Client
+              </MyText>
 
-          <CustomDropdown
-            options={allClient?.data}
-            type="client"
-            defaultOption={""}
-            onSelect={setSelect}
-            isDarker
-          />
+              <CustomDropdown
+                options={allClient?.data}
+                type="client"
+                defaultOption={""}
+                onSelect={setSelect}
+                isDarker
+              />
+            </>
+          ) : null}
+
           <Pressable
             onPress={toggleShowAllItems}
             style={{

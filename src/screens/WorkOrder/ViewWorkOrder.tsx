@@ -337,7 +337,7 @@ export default function ViewWorkOrder({ navigation, route }) {
               isDisabled={!ticket}
             />
             <CustomDropdown
-              label="s"
+              label="Status"
               options={["Open", "Project Completed"]}
               type="status"
               defaultOption={status}

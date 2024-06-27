@@ -16,6 +16,7 @@ import MyText from "../../components/customtext";
 import CustomButton from "../../components/customButton";
 import { useUpdateTechnicianMutation } from "../../services/RTKClient";
 import { useToast } from "react-native-toast-notifications";
+import { fp, hp, wp } from "../../utils/resDimensions";
 
 export default function ViewTechnician({ technicians, refetchworkorder }) {
   const [techniciansdata, setTechniciansdata] = useState(technicians);
@@ -86,121 +87,144 @@ export default function ViewTechnician({ technicians, refetchworkorder }) {
                      />
                    } */}
         </View>
+
         <View style={{ marginTop: 10 }}>
           <FlatList
             scrollEnabled={false}
             data={techniciansdata}
             renderItem={({ item, index }) => (
-              <View>
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Technician Name
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.technician_name}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "technician_name", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
+              <>
+                {index >= 1 && (
+                  <View
+                    style={{
+                      height: hp(0.5),
+                      width: "100%",
+                      backgroundColor: "grey",
+                      borderRadius: fp(2),
+                      marginVertical: hp(2),
+                    }}
                   />
-                </View>
+                )}
 
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Project Manager{" "}
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.project_manager}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "project_manager", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
-                </View>
+                <View>
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Technician Name
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.technician_name}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "technician_name", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
 
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Parts{" "}
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.parts}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "project_manager", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
-                </View>
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Labeling Methodology{" "}
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.labeling_methodology}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "project_manager", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
-                </View>
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Project Manager{" "}
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.project_manager}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "project_manager", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
 
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Service Details
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.other_details}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "service_request", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
-                </View>
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Parts{" "}
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.parts}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "project_manager", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Labeling Methodology{" "}
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.labeling_methodology}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "project_manager", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
 
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Procedures
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.procedures}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "procedures", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Service Details
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.other_details}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "service_request", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
+
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Procedures
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.procedures}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "procedures", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Required Deliverables{" "}
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.required_deliverables}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "project_manager", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
+                  <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                    Deliverable Instructions{" "}
+                  </MyText>
+                  <View style={[styles.viewcontainer, styles.outlined]}>
+                    <TextInput
+                      value={item.deliverable_instructions}
+                      onChangeText={(txt: string) =>
+                        handleChange(txt, "project_manager", index)
+                      }
+                      style={[styles.default]}
+                      editable={technicianEdit}
+                      multiline
+                    />
+                  </View>
                 </View>
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Required Deliverables{" "}
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.required_deliverables}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "project_manager", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
-                </View>
-                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Deliverable Instructions{" "}
-                </MyText>
-                <View style={[styles.viewcontainer, styles.outlined]}>
-                  <TextInput
-                    value={item.deliverable_instructions}
-                    onChangeText={(txt: string) =>
-                      handleChange(txt, "project_manager", index)
-                    }
-                    style={[styles.default]}
-                    editable={technicianEdit}
-                  />
-                </View>
-              </View>
+              </>
             )}
           />
         </View>
@@ -229,7 +253,6 @@ const styles = StyleSheet.create({
     marginVertical: 10,
   },
   default: {
-    width: "85%",
     borderRadius: 5,
     color: "black",
     padding: 10,

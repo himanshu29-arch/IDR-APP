@@ -14,6 +14,8 @@ import { Fonts } from "../utils/constants";
 import { fp, hp, wp } from "../utils/resDimensions";
 import CustomButton from "./customButton";
 import { Colors } from "react-native/Libraries/NewAppScreen";
+import { useSelector } from "react-redux";
+import { RootState } from "../redux/store";
 
 const data = [
   { label: "Open", value: "Open" },
@@ -37,6 +39,9 @@ const MultiSelectComponent = ({
   handleApplyFilter,
   isApplyDisable,
 }) => {
+  const { userData } = useSelector((state: RootState) => state.auth);
+  console.log(userData?.user?.user_type, "userType");
+
   const renderItem = (item, index) => {
     return (
       <View style={styles.item}>
@@ -93,31 +98,39 @@ const MultiSelectComponent = ({
           />
 
           {/* Client Name TextInput */}
-          <TextInput
-            style={styles.input}
-            placeholder="Enter client name"
-            placeholderTextColor={AppColors.black}
-            value={clientName}
-            onChangeText={(text) => setClientName(text)}
-          />
+          {userData?.user?.user_type != "Client Employee" ? (
+            <TextInput
+              style={styles.input}
+              placeholder="Enter client name"
+              placeholderTextColor={AppColors.black}
+              value={clientName}
+              onChangeText={(text) => setClientName(text)}
+            />
+          ) : null}
 
           {/* Technician Name TextInput */}
-          <TextInput
-            style={styles.input}
-            placeholder="Enter technician name"
-            placeholderTextColor={AppColors.black}
-            value={technicianName}
-            onChangeText={(text) => setTechnicianName(text)}
-          />
+          {userData?.user?.user_type == "Admin" ||
+          userData?.user?.user_type == "Subadmin" ? (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder="Enter technician name"
+                placeholderTextColor={AppColors.black}
+                value={technicianName}
+                onChangeText={(text) => setTechnicianName(text)}
+              />
 
-          {/* Project Manager Name TextInput */}
-          <TextInput
-            style={styles.input}
-            placeholder="Enter project manager name"
-            placeholderTextColor={AppColors.black}
-            value={projectManagerName}
-            onChangeText={(text) => setProjectManagerName(text)}
-          />
+              {/* Project Manager Name TextInput */}
+              <TextInput
+                style={styles.input}
+                placeholder="Enter project manager name"
+                placeholderTextColor={AppColors.black}
+                value={projectManagerName}
+                onChangeText={(text) => setProjectManagerName(text)}
+              />
+            </>
+          ) : null}
+
           <CustomButton
             title="Apply"
             onPress={handleApplyFilter}
