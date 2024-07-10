@@ -6,8 +6,9 @@ import {
   Pressable,
   StatusBar,
   FlatList,
+  TextInput,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { AppColors } from "../../utils/colors";
 import { SCREEN_WIDTH } from "../../utils/Dimensions";
 import Loader from "../../components/Loader";
@@ -33,11 +34,13 @@ import CustomButton from "../../components/customButton";
 import { getDate, timeFormatter } from "../../utils/helperfunctions";
 import { useToast } from "react-native-toast-notifications";
 import { useFocusEffect } from "@react-navigation/native";
-import { wp } from "../../utils/resDimensions";
+import { hp, wp } from "../../utils/resDimensions";
 import { BASE_URL } from "../../services/apiConfig";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
+import ViewAssignees from "./ViewAssignees";
+import { formatDate } from "../../utils/extractDate";
 
 export default function ViewWorkOrder({ navigation, route }) {
   const { OrderId } = route.params;
@@ -56,6 +59,7 @@ export default function ViewWorkOrder({ navigation, route }) {
   const [ticket, setTicket] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({});
+  const [notesData, setNoteData] = useState([]);
   const { data: locationData, refetch } = useGetLocationByClientQuery(client);
   const { userData } = useSelector((state: RootState) => state.auth);
   const [updateTicket, { isLoading: isLoading2 }] = useUpdateTicketMutation();
@@ -98,6 +102,7 @@ export default function ViewWorkOrder({ navigation, route }) {
       focusListener();
     };
   }, [navigation]);
+
   useEffect(() => {
     refetchworkorder();
   }, [OrderId]);
@@ -120,60 +125,60 @@ export default function ViewWorkOrder({ navigation, route }) {
     }
   }, [data]);
 
-  const onSubmit = (info) => {
-    const {
-      WorkOrdertype,
-      PONumber,
-      ClientSite,
-      ContactPerson,
-      ContactPhone,
-      ContactEmail,
-      Issue,
-      ServiceDate,
-    } = info;
+  // const onSubmit = (info) => {
+  //   const {
+  //     WorkOrdertype,
+  //     PONumber,
+  //     ClientSite,
+  //     ContactPerson,
+  //     ContactPhone,
+  //     ContactEmail,
+  //     Issue,
+  //     ServiceDate,
+  //   } = info;
 
-    const body = {
-      work_order_id: OrderId,
-      client_name: typeof client === "string" ? client : client?.company_name,
-      location_id:
-        typeof location === "string"
-          ? data?.workOrder?.location_id
-          : location?.location_id,
-      client_id:
-        typeof client === "string"
-          ? data?.workOrder?.client_id
-          : client?.client_id,
-      work_order_type: WorkOrdertype,
-      generated_date: getDate(new Date()),
-      generated_time: timeFormatter(new Date()),
-      po_number: PONumber,
-      client_site: ClientSite,
-      job_location:
-        typeof location === "string" ? location : location?.address_line_one,
-      service_date: ServiceDate,
-      contact_person: ContactPerson,
-      contact_phone_number: ContactPhone,
-      contact_mail_id: ContactEmail,
-      issue: Issue,
-      status: status,
-    };
+  //   const body = {
+  //     work_order_id: OrderId,
+  //     client_name: typeof client === "string" ? client : client?.company_name,
+  //     location_id:
+  //       typeof location === "string"
+  //         ? data?.workOrder?.location_id
+  //         : location?.location_id,
+  //     client_id:
+  //       typeof client === "string"
+  //         ? data?.workOrder?.client_id
+  //         : client?.client_id,
+  //     work_order_type: WorkOrdertype,
+  //     generated_date: getDate(new Date()),
+  //     generated_time: timeFormatter(new Date()),
+  //     po_number: PONumber,
+  //     client_site: ClientSite,
+  //     job_location:
+  //       typeof location === "string" ? location : location?.address_line_one,
+  //     service_date: ServiceDate,
+  //     contact_person: ContactPerson,
+  //     contact_phone_number: ContactPhone,
+  //     contact_mail_id: ContactEmail,
+  //     issue: Issue,
+  //     status: status,
+  //   };
 
-    //   return
-    updateTicket(body)
-      .unwrap()
-      .then((payload) => {
-        refetchworkorder();
-        setTicket(false);
-        toast.show(payload.message, {
-          type: "success",
-        });
-      })
-      .catch((error) => {
-        toast.show(error.data.message, {
-          type: "danger",
-        });
-      });
-  };
+  //   //   return
+  //   updateTicket(body)
+  //     .unwrap()
+  //     .then((payload) => {
+  //       refetchworkorder();
+  //       setTicket(false);
+  //       toast.show(payload.message, {
+  //         type: "success",
+  //       });
+  //     })
+  //     .catch((error) => {
+  //       toast.show(error.data.message, {
+  //         type: "danger",
+  //       });
+  //     });
+  // };
 
   function navigateToAddNote(params: type) {
     navigation.navigate("AddNote", {
@@ -182,6 +187,7 @@ export default function ViewWorkOrder({ navigation, route }) {
   }
 
   const refetchworkorder = async () => {
+    console.log("refetch work order");
     try {
       const response = await axios.get(
         `${BASE_URL}/work_order/by_id/${OrderId}`,
@@ -193,8 +199,7 @@ export default function ViewWorkOrder({ navigation, route }) {
       );
       if (response.status === 200) {
         setData(response?.data);
-        console.log(response?.data);
-        console.log("workorder by id");
+        setNoteData(response?.data?.workOrder?.notes);
       }
     } catch (error) {
       console.log("🚀 ~ getWorkOrderById ~ error:", error);
@@ -207,6 +212,15 @@ export default function ViewWorkOrder({ navigation, route }) {
       // });
     }
   };
+  useFocusEffect(
+    useCallback(() => {
+      refetchworkorder();
+      return () => {
+        // Clean up function if needed
+      };
+    }, [navigation])
+  );
+  console.log(date, "date");
 
   return (
     <SafeAreaView style={styles.conatiner}>
@@ -265,6 +279,9 @@ export default function ViewWorkOrder({ navigation, route }) {
                      />
                    } */}
           </View>
+          <MyText fontType="bold" style={{ fontSize: 16, marginTop: hp(1) }}>
+            {data?.workOrder?.ticket_number}
+          </MyText>
           <View style={{ marginTop: 10 }}>
             <CustomDropdown
               options={clientData?.data}
@@ -344,13 +361,32 @@ export default function ViewWorkOrder({ navigation, route }) {
               onSelect={setStatus}
               isDisabled={!ticket}
             />
+            <CustomInput
+              control={control}
+              errors={errors}
+              name="Service Date"
+              label="Service Date"
+              isDisabled={!ticket}
+            />
 
-            <CustomDatePicker
+            <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+              Service Date
+            </MyText>
+            <View style={[styles.viewcontainer, styles.outlined]}>
+              <TextInput
+                // value={item.comments}
+                value={formatDate(date)}
+                style={[styles.default]}
+                multiline
+              />
+            </View>
+
+            {/* <CustomDatePicker
               setDate={setDate}
               date={date}
               label="Service Date"
               isDisabled={!ticket}
-            />
+            /> */}
           </View>
         </View>
         {data?.workOrder?.technicians &&
@@ -360,6 +396,15 @@ export default function ViewWorkOrder({ navigation, route }) {
               refetchworkorder={refetchworkorder}
             />
           )}
+
+        {data?.workOrder?.assignees &&
+          data?.workOrder?.assignees.length !== 0 && (
+            <ViewAssignees
+              assignees={data?.workOrder?.assignees}
+              refetchworkorder={refetchworkorder}
+            />
+          )}
+
         {data?.workOrder?.notes && data?.workOrder?.notes.length !== 0 && (
           <ViewNotes
             NavigateToAddNote={navigateToAddNote}
@@ -390,5 +435,20 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     padding: 20,
     marginVertical: 10,
+  },
+  default: {
+    width: "85%",
+    borderRadius: 5,
+    padding: 10,
+    color: "black",
+  },
+  outlined: {
+    borderWidth: 1,
+    borderRadius: 10,
+  },
+  viewcontainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    borderColor: AppColors.darkgrey,
   },
 });

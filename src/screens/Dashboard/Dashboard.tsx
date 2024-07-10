@@ -8,6 +8,7 @@ import {
   TouchableOpacity,
   ScrollView,
   Pressable,
+  Linking,
 } from "react-native";
 import React, { useState, useEffect, useCallback } from "react";
 import { ImagePaths } from "../../utils/imagepaths";
@@ -35,6 +36,7 @@ import Snackbar from "react-native-snackbar";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { signOut } from "../../redux/slices/authSlice";
 import { useFocusEffect } from "@react-navigation/native";
+import { setQRData } from "../../redux/slices/QRDataSlice";
 
 export default function Dashboard({ navigation }) {
   const [select, setSelect] = useState({});
@@ -64,31 +66,6 @@ export default function Dashboard({ navigation }) {
   } = useGetAllWorkOrderQuery();
   const dispatch = useDispatch();
   const [showAllItems, setShowAllItems] = useState(false);
-
-  // const {
-  //   data: workOrder,
-  //   error: workOrderByClientError,
-  //   isLoading: isLoading1,
-  //   refetch,
-  // } = useGetWorkOrderByClientIdQuery(select);
-
-  // useFocusEffect(() => {
-  //   getAllWorkOrder();
-  //   getAllClient();
-  // });
-
-  // useEffect(() => {
-  //   const focusListener = navigation.addListener("focus", () => {
-  //     getWorkOrderByClientId();
-  //     // getAllClient();
-  //   });
-
-  //   // Clean up the listener on component unmount
-  //   return () => {
-  //     focusListener();
-  //   };
-  // }, [navigation, select]);
-
   useFocusEffect(
     useCallback(() => {
       getWorkOrderByClientId();
@@ -96,48 +73,7 @@ export default function Dashboard({ navigation }) {
       // getAllClient();
     }, [select])
   );
-
-  // const getAllWorkOrder = async () => {
-  //   try {
-  //     const response = await axios.get(`${BASE_URL}/work_order/all`, {
-  //       headers: {
-  //         Authorization: `Bearer ${userData.token}`,
-  //       },
-  //     });
-  //     if (response.status === 200) {
-  //       console.log("🚀 ~ getAllWorkOrder ~ response:", response?.data);
-  //     }
-  //   } catch (error) {
-  //     console.log("🚀 ~ handleWorkOrderFilter ~ error:", error);
-  //     setIsLoading(false);
-  //     Snackbar.show({
-  //       text: error.response.data.message,
-  //       duration: 4000,
-  //       backgroundColor: colors.RED,
-  //     });
-  //   }
-  // };
-  // const getAllClient = async () => {
-  //   try {
-  //     const response = await axios.get(`${BASE_URL}/client/all`, {
-  //       headers: {
-  //         Authorization: `Bearer ${userData.token}`,
-  //       },
-  //     });
-  //     if (response.status === 200) {
-  //       setAllClient(response?.data);
-  //       console.log("🚀 ~ getAllClient ~ response:", response?.data);
-  //     }
-  //   } catch (error) {
-  //     console.log("🚀 ~ handleWorkOrderFilter ~ error:", error);
-  //     setIsLoading(false);
-  //     Snackbar.show({
-  //       text: error.response.data.message,
-  //       duration: 4000,
-  //       backgroundColor: AppColors.red,
-  //     });
-  //   }
-  // };
+  console.log("🚀 ~ getWorkOrderByClientId ~ userData.token:", userData.token);
   const getWorkOrderByClientId = async () => {
     console.log("getWorkOrderByClientId", select?.client_id);
     try {
@@ -152,6 +88,7 @@ export default function Dashboard({ navigation }) {
       if (response.status === 200) {
         console.log("render open work order api done ");
         setWorkOrderByClientId(response?.data?.workorders);
+
         const OpenOrder = response?.data?.workorders.filter(
           (i) => i.status === "Open"
         );
@@ -168,40 +105,14 @@ export default function Dashboard({ navigation }) {
           dispatch(signOut());
         });
       }
-      // Snackbar.show({
-      //   text: error.response.data.message,
-      //   duration: 4000,
-      //   backgroundColor: AppColors.red,
-      // });
     }
   };
 
+  useEffect(() => {
+    dispatch(setQRData(""));
+  }, []);
+
   const [openWorkOrder, setOpenWorkOrder] = useState([]);
-
-  // useEffect(() => {
-  //   refetch().then((res) => {
-  //     console.log("RES ==> ", res.data);
-
-  //     if (res?.data?.workorders?.length !== 0) {
-  //       const OpenOrder = res?.data?.workorders.filter(
-  //         (i) => i.status === "Open"
-  //       );
-  //       const tempCount = countStatuses(res?.data?.workOrder);
-  //       setCounts(tempCount);
-  //       setOpenWorkOrder(OpenOrder);
-  //     } else {
-  //       setOpenWorkOrder([]);
-
-  //       setCounts({
-  //         Closed: 0,
-  //         Design: 0,
-  //         InProgress: 0,
-  //         Open: 0,
-  //         Reviewing: 0,
-  //       });
-  //     }
-  //   });
-  // }, [select, refetch]);
 
   const toggleShowAllItems = () => {
     setShowAllItems(!showAllItems);
@@ -315,7 +226,8 @@ export default function Dashboard({ navigation }) {
             <View style={[styles.nameBanner, styles.row]}>
               <CustomIcon
                 name="notifications-outline"
-                onPress={() => navigation.navigate("Notifications")}
+                // onPress={() => navigation.navigate("Notifications")}
+                onPress={() => navigation.navigate("ScanQR")}
               />
             </View>
           </View>

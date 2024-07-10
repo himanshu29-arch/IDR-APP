@@ -11,6 +11,7 @@ import { useSelector } from "react-redux";
 import Snackbar from "react-native-snackbar";
 import { RootState } from "../../redux/store";
 import { hp } from "../../utils/resDimensions";
+import { extractDateAndTime } from "../../utils/extractData_Time";
 
 export default function ViewNotes({
   NotesData,
@@ -26,6 +27,9 @@ export default function ViewNotes({
     newData[index] = { ...newData[index], [key]: val };
     setNotes(newData);
   };
+  useEffect(() => {
+    setNotes(NotesData);
+  }, [NotesData]);
 
   const onEditNote = async (index) => {
     const body = {
@@ -73,6 +77,7 @@ export default function ViewNotes({
 
   function renderNotes({ item, index }) {
     const isEditing = notesEdit[item.note_id] || false;
+    const date_time = extractDateAndTime(item?.updated_at);
     return (
       <View style={[styles.innerCard, ShadowStyle]}>
         <MyText style={{ marginVertical: 5, color: AppColors.black }}>
@@ -80,23 +85,67 @@ export default function ViewNotes({
         </MyText>
         <View style={[styles.viewcontainer, styles.outlined]}>
           <TextInput
-            value={item.comments}
+            // value={item.comments}
+            value={item?.comments}
             onChangeText={(txt) => handleChange(txt, "comments", index)}
             style={[styles.default]}
             editable={isEditing}
             multiline
           />
         </View>
+        <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+          User Name
+        </MyText>
+        <View style={[styles.viewcontainer, styles.outlined]}>
+          <TextInput
+            value={item?.profile?.first_name + " " + item?.profile?.last_name}
+            style={[styles.default]}
+            editable={false}
+            multiline
+          />
+        </View>
+        <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+          Date and Time
+        </MyText>
 
+        <View style={[styles.viewcontainer, styles.outlined]}>
+          <TextInput
+            value={date_time?.date + ", " + date_time?.time}
+            style={[styles.default]}
+            editable={false}
+            multiline
+          />
+        </View>
         <View style={{ marginTop: hp(2) }}>
-          {isEditing ? (
-            <CustomButton title={"Submit"} onPress={() => onEditNote(index)} />
-          ) : (
-            <CustomButton
-              title={"Edit"}
-              onPress={() => handleEditToggle(item.note_id)}
-            />
-          )}
+          {/* {userData?.user?.user_type !== "Client Employee" ? (
+            isEditing ? (
+              <CustomButton
+                title={"Submit"}
+                onPress={() => onEditNote(index)}
+              />
+            ) : (
+              <CustomButton
+                title={"Edit"}
+                onPress={() => handleEditToggle(item.note_id)}
+              />
+            )
+          ) : null} */}
+
+          {userData?.user?.user_type !== "Client Employee" &&
+            (userData?.user?.user_type !== "IDR Employee" ||
+              (userData?.user?.user_type === "IDR Employee" &&
+                userData?.user?.user_id === item?.profile?.user_id)) &&
+            (isEditing ? (
+              <CustomButton
+                title={"Submit"}
+                onPress={() => onEditNote(index)}
+              />
+            ) : (
+              <CustomButton
+                title={"Edit"}
+                onPress={() => handleEditToggle(item.note_id)}
+              />
+            ))}
         </View>
       </View>
     );
@@ -115,7 +164,9 @@ export default function ViewNotes({
           <MyText fontType="bold" style={{ fontSize: 22 }}>
             Comments
           </MyText>
-          <CustomButton title={"Add Note"} onPress={NavigateToAddNote} />
+          {userData?.user?.user_type != "Client Employee" ? (
+            <CustomButton title={"Add Note"} onPress={NavigateToAddNote} />
+          ) : null}
         </View>
         <View style={{ marginTop: 10 }}>
           <FlatList

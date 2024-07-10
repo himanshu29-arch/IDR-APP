@@ -57,3 +57,10 @@ export const dashboardStatusData = [
     value: "Closed",
   },
 ];
+export const StatusData = [
+  { label: "Open", value: "Open" },
+  { label: "Design", value: "Design" },
+  { label: "In Progress", value: "In Progress" },
+  { label: "Reviewing", value: "Reviewing" },
+  { label: "Closed", value: "Closed" },
+];

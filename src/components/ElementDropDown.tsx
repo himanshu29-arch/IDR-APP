@@ -7,23 +7,13 @@ import {
   TextInput,
 } from "react-native";
 import { Dropdown, MultiSelect } from "react-native-element-dropdown";
-import AntDesign from "react-native-vector-icons/AntDesign";
 import { AppColors } from "../utils/colors";
 import CustomIcon from "./customIcon";
 import { Fonts } from "../utils/constants";
 import { fp, hp, wp } from "../utils/resDimensions";
 import CustomButton from "./customButton";
-import { Colors } from "react-native/Libraries/NewAppScreen";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
-
-const data = [
-  { label: "Open", value: "Open" },
-  { label: "Design", value: "Design" },
-  { label: "In Progress", value: "In Progress" },
-  { label: "Reviewing", value: "Reviewing" },
-  { label: "Closed", value: "Closed" },
-];
 
 const MultiSelectComponent = ({
   selectedStatus,
@@ -38,6 +28,7 @@ const MultiSelectComponent = ({
   toggleParentDropdown,
   handleApplyFilter,
   isApplyDisable,
+  dropDownOptions,
 }) => {
   const { userData } = useSelector((state: RootState) => state.auth);
   console.log(userData?.user?.user_type, "userType");
@@ -77,7 +68,7 @@ const MultiSelectComponent = ({
             placeholderStyle={styles.placeholderStyle}
             selectedTextStyle={styles.selectedTextStyle}
             iconStyle={styles.iconStyle}
-            data={data}
+            data={dropDownOptions}
             labelField="label"
             valueField="value"
             placeholder="Select status"

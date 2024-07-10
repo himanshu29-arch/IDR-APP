@@ -11,6 +11,7 @@ import Inventory from "../screens/Inventory/Inventory";
 import Equipment from "../screens/Equipment/Equipment";
 import Settings from "../screens/Settings/Settings";
 import { hp } from "../utils/resDimensions";
+import { useFocusEffect, useNavigation } from "@react-navigation/native";
 
 const Tab = createBottomTabNavigator();
 
@@ -81,6 +82,7 @@ export default function BottomNavigation() {
       <Tab.Screen
         name="Inventory"
         component={Inventory}
+        initialParams={{ modelFromQR: null, previousRoute: "BottomTab" }}
         options={{
           tabBarLabel: ({ focused }) => (
             <MyText

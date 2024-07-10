@@ -106,8 +106,9 @@ export default function AddNote({ navigation, route }) {
         }
       );
       if (response.status === 200) {
-        console.log(response?.data);
-        navigation.navigate("Dashboard");
+        navigation.navigate("ViewWorkOrder", {
+          OrderId: OrderId,
+        });
         Snackbar.show({
           text: response?.data?.message,
           duration: 4000,

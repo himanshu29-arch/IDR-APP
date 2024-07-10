@@ -16,7 +16,7 @@ import { AppColors } from "../../utils/colors";
 import { SCREEN_HEIGHT } from "../../utils/Dimensions";
 import CustomIcon from "../../components/customIcon";
 import MyText from "../../components/customtext";
-import { Fonts, ShadowStyle } from "../../utils/constants";
+import { Fonts, ShadowStyle, StatusData } from "../../utils/constants";
 import {
   useDeleteWorkOrderMutation,
   useGetAllWorkOrderQuery,
@@ -26,9 +26,10 @@ import { useFocusEffect } from "@react-navigation/native";
 import MultiSelectComponent from "../../components/ElementDropDown";
 import { BASE_URL } from "../../services/apiConfig";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { hp } from "../../utils/resDimensions";
+import { setQRData } from "../../redux/slices/QRDataSlice";
 
 export default function WorkOrder({ navigation }) {
   const {
@@ -90,9 +91,11 @@ export default function WorkOrder({ navigation }) {
   const toggleParentDropdown = () => {
     setIsParentDropdownOpen(!isParentDropdownOpen);
   };
+  const dispatch = useDispatch();
   useEffect(() => {
     const focusListener = navigation.addListener("focus", () => {
       handleWorkOrderFilter();
+      dispatch(setQRData(""));
       // getAllClient();
     });
 
@@ -232,6 +235,7 @@ export default function WorkOrder({ navigation }) {
               toggleParentDropdown={toggleParentDropdown}
               handleApplyFilter={handleWorkOrderFilter}
               isApplyDisable={isFilterDisable}
+              dropDownOptions={StatusData}
             />
             {workOrderData.length > 0 ? (
               <FlatList
@@ -239,7 +243,6 @@ export default function WorkOrder({ navigation }) {
                 showsHorizontalScrollIndicator={false}
                 scrollEnabled={false}
                 renderItem={({ item }) => {
-                  console.log("🚀 ~ WorkOrder ~ item:", item);
                   return (
                     <Pressable
                       style={[styles.card, ShadowStyle]}

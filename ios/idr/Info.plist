@@ -70,5 +70,9 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<false/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>We are accessing library to upload the image for inventory</string>
+    <key>NSCameraUsageDescription</key>
+    <string>We are using Camera to scan the Qr code</string>
 </dict>
 </plist>

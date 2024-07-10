@@ -18,9 +18,11 @@ import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../utils/Dimensions";
 import { fp, hp } from "../utils/resDimensions";
 import axios from "axios";
 import { BASE_URL } from "../services/apiConfig";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import Snackbar from "react-native-snackbar";
 import Loader from "./Loader";
+import { RootState } from "../redux/store";
+import { getAllClients } from "../redux/slices/CommonDataSlice";
 
 type styleprops = {
   ViewStyles: ViewStyle;
@@ -50,7 +52,7 @@ const CustomDropdown = ({
   const [selectedOption, setSelectedOption] = useState("");
   const [allClient, setAllClient] = useState({});
   const { userData } = useSelector((state: RootState) => state.auth);
-
+  const dispatch = useDispatch();
   const toggleDropdown = () => {
     getAllClient();
     if (!isDisabled) {
@@ -74,6 +76,7 @@ const CustomDropdown = ({
       });
       if (response.status === 200) {
         setIsLoading(false);
+        dispatch(getAllClients(response?.data));
         setAllClient(response?.data);
       }
     } catch (error) {
