@@ -10,13 +10,20 @@ import {
   TouchableWithoutFeedback,
   Alert,
   Pressable,
+  RefreshControl,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AppColors } from "../../utils/colors";
+import { useToast } from "react-native-toast-notifications";
 import { SCREEN_HEIGHT } from "../../utils/Dimensions";
 import CustomIcon from "../../components/customIcon";
 import MyText from "../../components/customtext";
-import { Fonts, ShadowStyle, StatusData } from "../../utils/constants";
+import {
+  bottomSheetStyles,
+  Fonts,
+  ShadowStyle,
+  StatusData,
+} from "../../utils/constants";
 import {
   useDeleteWorkOrderMutation,
   useGetAllWorkOrderQuery,
@@ -30,6 +37,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import { hp } from "../../utils/resDimensions";
 import { setQRData } from "../../redux/slices/QRDataSlice";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { BottomSheetItem } from "../../components/BottomSheetItem";
 
 export default function WorkOrder({ navigation }) {
   const {
@@ -44,6 +53,7 @@ export default function WorkOrder({ navigation }) {
     useDeleteWorkOrderMutation();
   //filter
   const [selectedStatus, setSelectedStatus] = useState("");
+  const [selectedStatusLabel, setSelectedStatusLabel] = useState("");
   const [clientName, setClientName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [technicianName, setTechnicianName] = useState("");
@@ -52,6 +62,9 @@ export default function WorkOrder({ navigation }) {
   const [isFilterDisable, setIsFilterDisable] = useState(true);
   const [workOrderData, setWorkOrderData] = useState([]);
   const { userData } = useSelector((state: RootState) => state.auth);
+  const dispatch = useDispatch();
+  const refRBSheet = useRef();
+  const toast = useToast();
   const showAlert = () => {
     Alert.alert(
       "Delete",
@@ -71,7 +84,7 @@ export default function WorkOrder({ navigation }) {
         setShow(false);
         refetch();
         setShow(false);
-        handleWorkOrderFilter();
+        handleWorkOrderFilter("");
       })
       .catch((error) => {
         console.log("Error", error);
@@ -84,6 +97,15 @@ export default function WorkOrder({ navigation }) {
       refetch();
     }, [])
   );
+  const BottomSheetData = [
+    {
+      label: "Add Note",
+      iconFamily: "MaterialIcons",
+      iconName: "note-add",
+      value: "add_note",
+      onPress: handleAddNote,
+    },
+  ];
 
   function toggleShowFilter(params: type) {
     setShowFilter(!showFilter);
@@ -91,10 +113,10 @@ export default function WorkOrder({ navigation }) {
   const toggleParentDropdown = () => {
     setIsParentDropdownOpen(!isParentDropdownOpen);
   };
-  const dispatch = useDispatch();
+
   useEffect(() => {
     const focusListener = navigation.addListener("focus", () => {
-      handleWorkOrderFilter();
+      handleWorkOrderFilter("");
       dispatch(setQRData(""));
       // getAllClient();
     });
@@ -104,49 +126,52 @@ export default function WorkOrder({ navigation }) {
       focusListener();
     };
   }, [navigation]);
-  console.log("🚀 ~ handleWorkOrderFilter ~ selectedStatus:", selectedStatus);
-  const handleWorkOrderFilter = async () => {
+  function handleAddNote() {
+    navigation.navigate("AddNote", {
+      OrderId: selected?.work_order_id,
+    }),
+      refRBSheet.current.close();
+  }
+
+  const handleWorkOrderFilter = async (value) => {
     setIsLoading(true);
     setIsParentDropdownOpen(false);
-    console.log(
-      "🚀 ~ handleWorkOrderFilter ~ userData?.token:",
-      userData?.token
-    );
+
     try {
       let url = `${BASE_URL}work_order/all`;
 
       // Check if any filter options are filled
-      if (
-        selectedStatus ||
-        clientName ||
-        technicianName ||
-        projectManagerName
-      ) {
-        // Initialize an array to store query parameters
-        let queryParams = [];
+      if (value !== "reset") {
+        if (
+          selectedStatus ||
+          clientName ||
+          technicianName ||
+          projectManagerName
+        ) {
+          // Initialize an array to store query parameters
+          let queryParams = [];
 
-        // Conditionally add each parameter to the queryParams array
-        if (selectedStatus) {
-          queryParams.push(`status=${selectedStatus}`);
-        }
+          // Conditionally add each parameter to the queryParams array
+          if (selectedStatus) {
+            queryParams.push(`status=${selectedStatus}`);
+          }
 
-        if (clientName) {
-          queryParams.push(`client_name=${clientName}`);
-        }
-        if (technicianName) {
-          queryParams.push(`technician=${technicianName}`);
-        }
-        if (projectManagerName) {
-          queryParams.push(`project_manager=${projectManagerName}`);
-        }
+          if (clientName) {
+            queryParams.push(`client_name=${clientName}`);
+          }
+          if (technicianName) {
+            queryParams.push(`technician=${technicianName}`);
+          }
+          if (projectManagerName) {
+            queryParams.push(`project_manager=${projectManagerName}`);
+          }
 
-        // Construct the URL with the query parameters
-        if (queryParams.length > 0) {
-          url += "?" + queryParams.join("&");
+          // Construct the URL with the query parameters
+          if (queryParams.length > 0) {
+            url += "?" + queryParams.join("&");
+          }
         }
       }
-
-      console.log("🚀 ~ handleWorkOrderFilter ~ url:", url);
       const response = await axios.get(url, {
         headers: {
           Authorization: `Bearer ${userData?.token}`,
@@ -154,32 +179,17 @@ export default function WorkOrder({ navigation }) {
       });
 
       if (response.status === 200) {
-        response?.data?.workOrder.forEach((workOrder, index) => {
-          console.log(`Notes at index ${index}:`, workOrder.notes);
-        });
         setWorkOrderData(response?.data?.workOrder);
         setIsLoading(false);
       }
     } catch (error) {
-      console.log("🚀 ~ handleWorkOrderFilter ~ error:", error);
+      toast.show(error?.response?.data?.message, {
+        type: "danger",
+      });
       setIsLoading(false);
-      //  Snackbar.show({
-      //    text: error.response.data.message,
-      //    duration: 4000,
-      //    backgroundColor: colors.RED,
-      //  });
     }
   };
 
-  // Call handleWorkOrderFilter when filter values change
-  // useEffect(() => {
-  //   handleWorkOrderFilter();
-  // }, [selectedStatus]);
-
-  // useEffect(() => {
-  //   handleWorkOrderFilter();
-  // }, []);
-  function handleApplyFilter() {}
   // Effect to manage isFilterDisable
 
   useEffect(() => {
@@ -190,6 +200,24 @@ export default function WorkOrder({ navigation }) {
     }
   }, [selectedStatus, clientName, technicianName, projectManagerName]);
 
+  function handleResetFilter() {
+    setSelectedStatus("");
+    setClientName("");
+    setTechnicianName("");
+    setProjectManagerName("");
+    handleWorkOrderFilter("reset");
+    toggleParentDropdown();
+  }
+  const [refreshing, setRefreshing] = useState(false);
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+    // Simulate a network request
+    setTimeout(() => {
+      // Add new data or update the existing data here
+      handleWorkOrderFilter("");
+      setRefreshing(false);
+    }, 1000); // Adjust the timeout duration as needed
+  }, []);
   return (
     <SafeAreaView style={{ backgroundColor: AppColors.white, flex: 1 }}>
       <StatusBar
@@ -198,12 +226,20 @@ export default function WorkOrder({ navigation }) {
         translucent={false}
       />
       <Loader loading={isLoading1 || isLoading2 || isLoading} />
-      <ScrollView>
+      <ScrollView
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor={AppColors?.primary}
+          />
+        }
+      >
         <TouchableWithoutFeedback
           style={{ marginTop: StatusBar.currentHeight }}
           onPress={() => {
             setSelected({});
-            setShow(false);
+            refRBSheet.current.close();
           }}
         >
           <View style={{ padding: 15 }}>
@@ -223,19 +259,30 @@ export default function WorkOrder({ navigation }) {
             </View>
 
             <MultiSelectComponent
-              selectedStatus={selectedStatus}
-              setSelectedStatus={setSelectedStatus}
-              clientName={clientName}
-              setClientName={setClientName}
-              technicianName={technicianName}
-              setTechnicianName={setTechnicianName}
-              projectManagerName={projectManagerName}
-              setProjectManagerName={setProjectManagerName}
+              //dropDown
+              dropdownPlaceholder="Select Status"
+              firstDropdownValue={selectedStatus}
+              setFirstDropdownValue={setSelectedStatus}
+              setFirstDropdownLabel={setSelectedStatusLabel}
+              dropDownOptions={StatusData}
+              // first input
+              firstInputPlaceholder={"Enter client name"}
+              firstInput={clientName}
+              setFirstInput={setClientName}
+              // second input
+              secondInputPlaceholder={"Enter technician name"}
+              secondInput={technicianName}
+              setSecondInput={setTechnicianName}
+              // third input
+              thirdInputPlaceholder={"Enter project manager name"}
+              thirdInput={projectManagerName}
+              setThirdInput={setProjectManagerName}
+              // parent dropdown
               isParentDropdownOpen={isParentDropdownOpen}
               toggleParentDropdown={toggleParentDropdown}
               handleApplyFilter={handleWorkOrderFilter}
               isApplyDisable={isFilterDisable}
-              dropDownOptions={StatusData}
+              handleResetFilter={handleResetFilter}
             />
             {workOrderData.length > 0 ? (
               <FlatList
@@ -277,7 +324,7 @@ export default function WorkOrder({ navigation }) {
                           name="ellipsis-vertical"
                           onPress={() => {
                             setSelected(item);
-                            setShow(true);
+                            refRBSheet.current.open();
                           }}
                         />
                       </View>
@@ -348,7 +395,6 @@ export default function WorkOrder({ navigation }) {
             ShadowStyle,
           ]}
         >
-          {/* {selected?.notes.length == 0 && ( */}
           <MyText
             style={{ fontSize: 16, marginBottom: hp(2) }}
             fontType="medium"
@@ -361,7 +407,6 @@ export default function WorkOrder({ navigation }) {
           >
             Add note
           </MyText>
-          {/* )} */}
           <View
             style={{
               height: hp(0.1),
@@ -369,18 +414,6 @@ export default function WorkOrder({ navigation }) {
               backgroundColor: AppColors.grey,
             }}
           />
-          {/* <MyText
-            style={{ fontSize: 16, margin: 10 }}
-            fontType="medium"
-            onPress={() => {
-              navigation.navigate("ViewWorkOrder", {
-                OrderId: selected?.work_order_id,
-              }),
-                setShow(false);
-            }}
-          >
-            Edit record
-          </MyText> */}
           {userData?.user?.user_type == "Admin" ? (
             <MyText
               style={{ fontSize: 16, marginTop: hp(2) }}
@@ -393,12 +426,22 @@ export default function WorkOrder({ navigation }) {
         </View>
       )}
 
-      {/* <TouchableOpacity
-        style={[styles.fab, ShadowStyle]}
-        onPress={() => navigation.navigate("GenerateTicket")}
+      <RBSheet
+        ref={refRBSheet}
+        useNativeDriver={false}
+        height={hp(25)}
+        draggable
+        customStyles={bottomSheetStyles}
+        customModalProps={{
+          animationType: "slide",
+          statusBarTranslucent: true,
+        }}
+        customAvoidingViewProps={{
+          enabled: false,
+        }}
       >
-        <CustomIcon name="add" color={AppColors.white} size={30} />
-      </TouchableOpacity> */}
+        <BottomSheetItem BottomSheetData={BottomSheetData} />
+      </RBSheet>
     </SafeAreaView>
   );
 }

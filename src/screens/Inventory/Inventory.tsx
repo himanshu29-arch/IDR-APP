@@ -8,15 +8,16 @@ import {
   StyleSheet,
   Pressable,
   RefreshControl,
+  Alert,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import Loader from "../../components/Loader";
 import { AppColors } from "../../utils/colors";
 import CustomIcon from "../../components/customIcon";
 import MyText from "../../components/customtext";
-import { Fonts, ShadowStyle } from "../../utils/constants";
+import { bottomSheetStyles, Fonts, ShadowStyle } from "../../utils/constants";
 import { FlatList } from "react-native";
-import { hp, wp } from "../../utils/resDimensions";
+import { fp, hp, wp } from "../../utils/resDimensions";
 import FloatingButton from "../../components/floatingButton";
 import AntDesign from "react-native-vector-icons/AntDesign";
 import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
@@ -25,15 +26,25 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import RBSheet from "react-native-raw-bottom-sheet";
-import { BottomSheetItem } from "./ViewInventory";
 import { useFocusEffect, useIsFocused } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MultiSelectComponent from "../../components/ElementDropDown";
+import { useToast } from "react-native-toast-notifications";
+import { BottomSheetItem } from "../../components/BottomSheetItem";
 
 export default function Inventory({ navigation }) {
   const { model } = useSelector((state) => state.QRData); // Ensure 'PdfStatus' matches the slice name in your Redux store
+  const toast = useToast();
   const [data, setData] = useState();
   const [isLoading, setIsLoading] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedLocationLabel, setSelectedLocationLabel] = useState("");
+  const [deviceType, setDeviceType] = useState("");
+  const [modelText, setModelText] = useState("");
+  const [make, setMake] = useState("");
+  const [isParentDropdownOpen, setIsParentDropdownOpen] = useState(true);
+  const [isFilterDisable, setIsFilterDisable] = useState(true);
+
   const { userData } = useSelector((state: RootState) => state.auth);
   const [refreshing, setRefreshing] = useState(false);
   const [locationOptions, setLocationOptions] = useState([]);
@@ -42,29 +53,74 @@ export default function Inventory({ navigation }) {
     // Simulate a network request
     setTimeout(() => {
       // Add new data or update the existing data here
-      fetchInventory();
+      fetchInventory("");
       setRefreshing(false);
     }, 1000); // Adjust the timeout duration as needed
   }, []);
 
-  const fetchInventory = async () => {
+  const onDeleteConfirm = async (inventory_id) => {
     setIsLoading(true);
-    console.log("fetch inventory");
+    let url = `${BASE_URL}inventory/${inventory_id}`;
     try {
-      const response = await axios.get(`${BASE_URL}/inventory/all`, {
+      const response = await axios.delete(url, {
         headers: {
           Authorization: `Bearer ${userData.token}`,
         },
       });
       if (response.status === 200) {
+        navigation?.navigate("Inventory");
         setIsLoading(false);
-        console.log("data", response?.data);
-        setData(response?.data?.data);
       }
     } catch (error) {
       setIsLoading(false);
     }
   };
+
+  const fetchInventory = async (value) => {
+    setIsLoading(true);
+    console.log("fetch inventory");
+
+    let url = `${BASE_URL}inventory/all`;
+    const params = new URLSearchParams();
+
+    if (selectedLocation) params.append("location", selectedLocationLabel);
+    if (make) params.append("search", make);
+    if (modelText) params.append("model", modelText);
+    if (deviceType) params.append("device_type", deviceType);
+
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    console.log("🚀 ~ fetchInventory ~ url:", url);
+    try {
+      const response = await axios.get(
+        value == "reset" ? `${BASE_URL}inventory/all` : url,
+        {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setIsLoading(false);
+        console.log("data", response?.data);
+        setData(response?.data?.data);
+        toggleParentDropdown();
+      }
+    } catch (error) {
+      toggleParentDropdown();
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (selectedLocation || deviceType || make || modelText) {
+      setIsFilterDisable(false);
+    } else {
+      setIsFilterDisable(true);
+    }
+  }, [selectedLocation, deviceType, make, modelText]);
+
   const fetchInventoryByQR = async () => {
     setIsLoading(true);
     console.log("fetch inventory by Qr");
@@ -87,16 +143,11 @@ export default function Inventory({ navigation }) {
       }
     } catch (error) {
       setIsLoading(false);
-      // Snackbar.show({
-      //   text: error.response.data.message,
-      //   duration: 4000,
-      //   backgroundColor: AppColors.red,
-      // });
     }
   };
   useEffect(() => {
     if (model == "") {
-      fetchInventory();
+      fetchInventory("");
     } else {
       fetchInventoryByQR();
     }
@@ -140,6 +191,48 @@ export default function Inventory({ navigation }) {
       });
     }
   };
+  function handleResetFilter() {
+    setSelectedLocation("");
+    setDeviceType("");
+    setMake("");
+    setModelText("");
+    fetchInventory("reset");
+    toggleParentDropdown();
+  }
+
+  const toggleParentDropdown = () => {
+    setIsParentDropdownOpen(!isParentDropdownOpen);
+  };
+
+  const handleDeleteInventory = () => {
+    Alert.alert(
+      "Are you sure?",
+      "Do you really want to delete this Inventory?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => onDeleteConfirm(inventoryId),
+        },
+      ],
+      { cancelable: false }
+    );
+    refRBSheet.current.close();
+  };
+  const BottomSheetDataDeleteItem = [
+    {
+      label: "Delete Inventory",
+      iconFamily: "Ionicons",
+      iconName: "trash-bin",
+      value: "delete_inventory",
+      onPress: handleDeleteInventory,
+    },
+  ];
+
   return (
     <SafeAreaView style={{ backgroundColor: AppColors.white, flex: 1 }}>
       <StatusBar
@@ -157,21 +250,6 @@ export default function Inventory({ navigation }) {
           />
         }
       >
-        {/* <MultiSelectComponent
-          selectedStatus={selectedStatus}
-          setSelectedStatus={setSelectedStatus}
-          clientName={clientName}
-          setClientName={setClientName}
-          technicianName={technicianName}
-          setTechnicianName={setTechnicianName}
-          projectManagerName={projectManagerName}
-          setProjectManagerName={setProjectManagerName}
-          isParentDropdownOpen={isParentDropdownOpen}
-          toggleParentDropdown={toggleParentDropdown}
-          handleApplyFilter={handleWorkOrderFilter}
-          isApplyDisable={isFilterDisable}
-          dropDownOptions={locationOptions}
-        /> */}
         <View style={{ padding: 15, marginTop: StatusBar.currentHeight }}>
           <View style={styles.mainRow}>
             <MyText
@@ -187,6 +265,35 @@ export default function Inventory({ navigation }) {
               <CustomIcon name="notifications-outline" />
             </Pressable>
           </View>
+          {userData?.user?.user_type !== "Client Employee" && (
+            <MultiSelectComponent
+              //dropDown
+              dropdownPlaceholder={"Select Location"}
+              firstDropdownValue={selectedLocation}
+              dropDownOptions={locationOptions}
+              setFirstDropdownLabel={setSelectedLocationLabel}
+              setFirstDropdownValue={setSelectedLocation}
+              // first input
+              firstInputPlaceholder={"Enter device type"}
+              firstInput={deviceType}
+              setFirstInput={setDeviceType}
+              // second input
+              secondInputPlaceholder={"Enter model"}
+              secondInput={modelText}
+              setSecondInput={setModelText}
+              // third input
+              thirdInputPlaceholder={"Enter make"}
+              thirdInput={make}
+              setThirdInput={setMake}
+              // parent dropdown
+              isParentDropdownOpen={isParentDropdownOpen}
+              toggleParentDropdown={toggleParentDropdown}
+              handleApplyFilter={fetchInventory}
+              isApplyDisable={isFilterDisable}
+              //
+              handleResetFilter={handleResetFilter}
+            />
+          )}
 
           {data?.length > 0 ? (
             <FlatList
@@ -228,7 +335,7 @@ export default function Inventory({ navigation }) {
                             marginTop: hp(1),
                           }}
                         >
-                          {item.color}
+                          {item.device_type}
                         </MyText>
                       </View>
                       {/* <CustomIcon
@@ -278,7 +385,10 @@ export default function Inventory({ navigation }) {
           ) : (
             <MyText
               fontType="medium"
-              style={{ justifyContent: "center", alignItems: "center" }}
+              style={{
+                fontSize: fp(2),
+                alignSelf: "center",
+              }}
             >
               No data available
             </MyText>
@@ -304,44 +414,6 @@ export default function Inventory({ navigation }) {
           IconComp={<AntDesign name="plus" size={25} color="#fff" />}
         />
       </View>
-
-      <RBSheet
-        ref={refRBSheet}
-        useNativeDriver={false}
-        height={hp(30)}
-        draggable
-        customStyles={{
-          wrapper: {
-            backgroundColor: "transparent",
-            shadowColor: "#000",
-            shadowOffset: {
-              width: 0,
-              height: 4,
-            },
-            shadowOpacity: 0.5,
-            shadowRadius: 4.65,
-
-            elevation: 6,
-          },
-          draggableIcon: {
-            marginTop: hp(3),
-            width: wp(15),
-            backgroundColor: "rgba(236, 236, 236, 1)",
-          },
-        }}
-        customModalProps={{
-          animationType: "slide",
-          statusBarTranslucent: true,
-        }}
-        customAvoidingViewProps={{
-          enabled: false,
-        }}
-      >
-        <BottomSheetItem
-          WOtranferPress={WOtranferPress}
-          LocTransferPress={LocTransferPress}
-        />
-      </RBSheet>
     </SafeAreaView>
   );
 }

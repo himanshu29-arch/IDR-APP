@@ -10,7 +10,7 @@ import { BASE_URL } from "../../services/apiConfig";
 import { useSelector } from "react-redux";
 import Snackbar from "react-native-snackbar";
 import { RootState } from "../../redux/store";
-import { hp } from "../../utils/resDimensions";
+import { hp, wp } from "../../utils/resDimensions";
 import { extractDateAndTime } from "../../utils/extractData_Time";
 
 export default function ViewNotes({
@@ -137,11 +137,13 @@ export default function ViewNotes({
                 userData?.user?.user_id === item?.profile?.user_id)) &&
             (isEditing ? (
               <CustomButton
+                _width={wp(70)}
                 title={"Submit"}
                 onPress={() => onEditNote(index)}
               />
             ) : (
               <CustomButton
+                _width={wp(70)}
                 title={"Edit"}
                 onPress={() => handleEditToggle(item.note_id)}
               />
@@ -165,7 +167,11 @@ export default function ViewNotes({
             Comments
           </MyText>
           {userData?.user?.user_type != "Client Employee" ? (
-            <CustomButton title={"Add Note"} onPress={NavigateToAddNote} />
+            <CustomButton
+              title={"Add Note"}
+              onPress={NavigateToAddNote}
+              _width={wp(30)}
+            />
           ) : null}
         </View>
         <View style={{ marginTop: 10 }}>

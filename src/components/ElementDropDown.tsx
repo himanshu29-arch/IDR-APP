@@ -15,23 +15,35 @@ import CustomButton from "./customButton";
 import { useSelector } from "react-redux";
 import { RootState } from "../redux/store";
 
-const MultiSelectComponent = ({
-  selectedStatus,
-  setSelectedStatus,
-  clientName,
-  setClientName,
-  technicianName,
-  setTechnicianName,
-  projectManagerName,
-  setProjectManagerName,
+const MultiSelectComponent: React.FC<MultiSelectComponentProps> = ({
+  //inner dropdown
+  dropdownPlaceholder,
+  firstDropdownValue,
+  setFirstDropdownValue,
+  dropDownOptions,
+  setFirstDropdownLabel,
+  //first input
+  firstInput,
+  setFirstInput,
+  firstInputPlaceholder,
+  //second input
+  secondInput,
+  setSecondInput,
+  secondInputPlaceholder,
+  //third input
+  thirdInput,
+  setThirdInput,
+  thirdInputPlaceholder,
+  //parent dropdown
   isParentDropdownOpen,
   toggleParentDropdown,
+  //submit/disable
   handleApplyFilter,
   isApplyDisable,
-  dropDownOptions,
+  //Reset filter
+  handleResetFilter,
 }) => {
   const { userData } = useSelector((state: RootState) => state.auth);
-  console.log(userData?.user?.user_type, "userType");
 
   const renderItem = (item, index) => {
     return (
@@ -42,8 +54,10 @@ const MultiSelectComponent = ({
   };
 
   const handleChange = (item) => {
-    setSelectedStatus((prev) => (prev === item.value ? null : item.value));
+    setFirstDropdownValue((prev) => (prev === item.value ? null : item.value));
+    setFirstDropdownLabel((prev) => (prev == item?.label ? null : item.label));
   };
+  console.log("🚀 ~ dropdownPlaceholder:", dropdownPlaceholder);
 
   return (
     <View style={styles.container}>
@@ -71,62 +85,97 @@ const MultiSelectComponent = ({
             data={dropDownOptions}
             labelField="label"
             valueField="value"
-            placeholder="Select status"
-            value={selectedStatus}
+            placeholder={dropdownPlaceholder}
+            value={firstDropdownValue}
             itemTextStyle={styles.itemTextStyle}
-            // search
             searchPlaceholder="Search..."
             onChange={handleChange}
-            // renderLeftIcon={() => (
-            //   <AntDesign
-            //     style={styles.icon}
-            //     color="black"
-            //     name="Safety"
-            //     size={20}
-            //   />
-            // )}
             renderItem={renderItem}
           />
 
-          {/* Client Name TextInput */}
-          {userData?.user?.user_type != "Client Employee" ? (
+          {dropdownPlaceholder === "Select Location" ? (
             <TextInput
               style={styles.input}
-              placeholder="Enter client name"
+              placeholder={firstInputPlaceholder}
               placeholderTextColor={AppColors.black}
-              value={clientName}
-              onChangeText={(text) => setClientName(text)}
+              value={firstInput}
+              onChangeText={setFirstInput}
+            />
+          ) : userData?.user?.user_type !== "Client Employee" ? (
+            <TextInput
+              style={styles.input}
+              placeholder={firstInputPlaceholder}
+              placeholderTextColor={AppColors.black}
+              value={firstInput}
+              onChangeText={setFirstInput}
             />
           ) : null}
 
-          {/* Technician Name TextInput */}
-          {userData?.user?.user_type == "Admin" ||
-          userData?.user?.user_type == "Subadmin" ? (
+          {dropdownPlaceholder === "Select Location" ? (
             <>
               <TextInput
                 style={styles.input}
-                placeholder="Enter technician name"
+                placeholder={secondInputPlaceholder}
                 placeholderTextColor={AppColors.black}
-                value={technicianName}
-                onChangeText={(text) => setTechnicianName(text)}
+                value={secondInput}
+                onChangeText={setSecondInput}
               />
 
               {/* Project Manager Name TextInput */}
               <TextInput
                 style={styles.input}
-                placeholder="Enter project manager name"
+                placeholder={thirdInputPlaceholder}
                 placeholderTextColor={AppColors.black}
-                value={projectManagerName}
-                onChangeText={(text) => setProjectManagerName(text)}
+                value={thirdInput}
+                onChangeText={setThirdInput}
+              />
+            </>
+          ) : userData?.user?.user_type == "Admin" ||
+            userData?.user?.user_type == "Subadmin" ? (
+            <>
+              <TextInput
+                style={styles.input}
+                placeholder={secondInputPlaceholder}
+                placeholderTextColor={AppColors.black}
+                value={secondInput}
+                onChangeText={setSecondInput}
+              />
+
+              {/* Project Manager Name TextInput */}
+              <TextInput
+                style={styles.input}
+                placeholder={thirdInputPlaceholder}
+                placeholderTextColor={AppColors.black}
+                value={thirdInput}
+                onChangeText={setThirdInput}
               />
             </>
           ) : null}
 
-          <CustomButton
-            title="Apply"
-            onPress={handleApplyFilter}
-            isdisabled={isApplyDisable}
-          />
+          {/* Technician Name TextInput */}
+
+          <View
+            style={{
+              marginTop: hp(1),
+              alignSelf: "center",
+              flexDirection: "row",
+              justifyContent: "space-evenly",
+            }}
+          >
+            <CustomButton
+              _width={wp(35)}
+              title="Apply"
+              onPress={handleApplyFilter}
+              isdisabled={isApplyDisable}
+            />
+            <View style={{ marginLeft: wp(4) }}>
+              <CustomButton
+                _width={wp(35)}
+                title="Reset"
+                onPress={handleResetFilter}
+              />
+            </View>
+          </View>
         </View>
       )}
     </View>

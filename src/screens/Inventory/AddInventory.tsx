@@ -377,7 +377,6 @@ export default function AddInventory({ navigation }) {
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
               Location
             </MyText>
-            {/* <View style={[styles.viewcontainer, styles.outlined]}> */}
             <Dropdown
               style={styles.dropdown}
               placeholderStyle={styles.placeholderStyle}
@@ -392,17 +391,8 @@ export default function AddInventory({ navigation }) {
               // search
               searchPlaceholder="Search..."
               onChange={handleSetLocation}
-              // renderLeftIcon={() => (
-              //   <AntDesign
-              //     style={styles.icon}
-              //     color="black"
-              //     name="Safety"
-              //     size={20}
-              //   />
-              // )}
               renderItem={renderItem}
             />
-            {/* </View> */}
           </View>
           <View style={{ marginTop: hp(1) }}>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>

@@ -20,7 +20,6 @@ import { fp, hp, wp } from "../../utils/resDimensions";
 
 export default function ViewTechnician({ technicians, refetchworkorder }) {
   const [techniciansdata, setTechniciansdata] = useState(technicians);
-  console.log("🚀 ~ ViewTechnician ~ techniciansdata:", techniciansdata);
   const [technicianEdit, setTechnicianEdit] = useState(false);
   const [updateTechnician, { isLoading }] = useUpdateTechnicianMutation();
   const toast = useToast();
@@ -32,7 +31,6 @@ export default function ViewTechnician({ technicians, refetchworkorder }) {
   };
 
   const onSubmit = () => {
-    console.log(techniciansdata);
     const body = {
       technician_id: techniciansdata[0]?.technician_id,
       work_order_id: techniciansdata[0]?.work_order_id,

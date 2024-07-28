@@ -197,6 +197,7 @@ export default function AddNote({ navigation, route }) {
             </View>
             <View style={{ marginTop: 30 }}>
               <CustomButton
+                _width={wp(80)}
                 title="Submit"
                 onPress={onsubmit}
                 isdisabled={!comment}

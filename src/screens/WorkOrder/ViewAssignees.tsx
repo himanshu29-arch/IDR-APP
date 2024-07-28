@@ -20,7 +20,6 @@ import { fp, hp, wp } from "../../utils/resDimensions";
 
 export default function ViewAssignees({ assignees, refetchworkorder }) {
   const [techniciansdata, setTechniciansdata] = useState(assignees);
-  console.log("🚀 ~ ViewTechnician ~ techniciansdata:", techniciansdata);
   const [technicianEdit, setTechnicianEdit] = useState(false);
   const [updateTechnician, { isLoading }] = useUpdateTechnicianMutation();
   const toast = useToast();

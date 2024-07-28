@@ -1,46 +1,51 @@
 import {
   View,
-  Text,
   StyleSheet,
   SafeAreaView,
   Pressable,
   StatusBar,
-  FlatList,
   TextInput,
+  Text,
+  Alert,
 } from "react-native";
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AppColors } from "../../utils/colors";
 import { SCREEN_WIDTH } from "../../utils/Dimensions";
 import Loader from "../../components/Loader";
 import CustomIcon from "../../components/customIcon";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { ShadowStyle } from "../../utils/constants";
+import {
+  bottomSheetStyles,
+  Fonts,
+  ShadowStyle,
+  StatusData,
+} from "../../utils/constants";
 import MyText from "../../components/customtext";
 import {
   useGetAllClientQuery,
   useGetLocationByClientQuery,
-  useGetWorkOrderByIDQuery,
   useUpdateTicketMutation,
 } from "../../services/RTKClient";
 import CustomInput from "../../components/customInput";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
-import { generateTicket, workorderview } from "../../utils/validationScemas";
+import { workorderview } from "../../utils/validationScemas";
 import CustomDropdown from "../../components/customDropdown";
-import CustomDatePicker from "../../components/customDatepicker";
 import ViewTechnician from "./ViewTecnician";
 import ViewNotes from "./ViewNotes";
-import CustomButton from "../../components/customButton";
-import { getDate, timeFormatter } from "../../utils/helperfunctions";
 import { useToast } from "react-native-toast-notifications";
 import { useFocusEffect } from "@react-navigation/native";
-import { hp, wp } from "../../utils/resDimensions";
+import { fp, hp, wp } from "../../utils/resDimensions";
 import { BASE_URL } from "../../services/apiConfig";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import ViewAssignees from "./ViewAssignees";
 import { formatDate } from "../../utils/extractDate";
+import ViewWOInventories from "./ViewWOInventories";
+import RBSheet from "react-native-raw-bottom-sheet";
+import { BottomSheetItem } from "../../components/BottomSheetItem";
+import { Dropdown } from "react-native-element-dropdown";
 
 export default function ViewWorkOrder({ navigation, route }) {
   const { OrderId } = route.params;
@@ -54,10 +59,12 @@ export default function ViewWorkOrder({ navigation, route }) {
   const [client, setClient] = useState<string | object>("");
   const toast = useToast();
   const [date, setDate] = useState(Date);
-  const [status, setStatus] = useState("");
+  const [filteredWO, setFilteredWO] = useState({});
+  const [status, setStatus] = useState({ label: "", value: "" });
   const [location, setLocation] = useState("");
   const [ticket, setTicket] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [editStatus, SetEditStatus] = useState(false);
   const [data, setData] = useState({});
   const [notesData, setNoteData] = useState([]);
   const { data: locationData, refetch } = useGetLocationByClientQuery(client);
@@ -84,7 +91,7 @@ export default function ViewWorkOrder({ navigation, route }) {
 
     resolver: yupResolver(workorderview),
   });
-
+  const refRBSheet = useRef();
   useEffect(() => {
     if (client?.client_id) {
       refetch();
@@ -110,7 +117,10 @@ export default function ViewWorkOrder({ navigation, route }) {
   useEffect(() => {
     if (typeof data !== "undefined") {
       setClient(data?.workOrder?.client_name);
-      setStatus(data?.workOrder?.status);
+      setStatus({
+        label: data?.workOrder?.status,
+        value: data?.workOrder?.status,
+      });
       setLocation(data?.workOrder?.job_location);
       reset({
         WorkOrdertype: data?.workOrder?.work_order_type,
@@ -125,69 +135,14 @@ export default function ViewWorkOrder({ navigation, route }) {
     }
   }, [data]);
 
-  // const onSubmit = (info) => {
-  //   const {
-  //     WorkOrdertype,
-  //     PONumber,
-  //     ClientSite,
-  //     ContactPerson,
-  //     ContactPhone,
-  //     ContactEmail,
-  //     Issue,
-  //     ServiceDate,
-  //   } = info;
-
-  //   const body = {
-  //     work_order_id: OrderId,
-  //     client_name: typeof client === "string" ? client : client?.company_name,
-  //     location_id:
-  //       typeof location === "string"
-  //         ? data?.workOrder?.location_id
-  //         : location?.location_id,
-  //     client_id:
-  //       typeof client === "string"
-  //         ? data?.workOrder?.client_id
-  //         : client?.client_id,
-  //     work_order_type: WorkOrdertype,
-  //     generated_date: getDate(new Date()),
-  //     generated_time: timeFormatter(new Date()),
-  //     po_number: PONumber,
-  //     client_site: ClientSite,
-  //     job_location:
-  //       typeof location === "string" ? location : location?.address_line_one,
-  //     service_date: ServiceDate,
-  //     contact_person: ContactPerson,
-  //     contact_phone_number: ContactPhone,
-  //     contact_mail_id: ContactEmail,
-  //     issue: Issue,
-  //     status: status,
-  //   };
-
-  //   //   return
-  //   updateTicket(body)
-  //     .unwrap()
-  //     .then((payload) => {
-  //       refetchworkorder();
-  //       setTicket(false);
-  //       toast.show(payload.message, {
-  //         type: "success",
-  //       });
-  //     })
-  //     .catch((error) => {
-  //       toast.show(error.data.message, {
-  //         type: "danger",
-  //       });
-  //     });
-  // };
-
   function navigateToAddNote(params: type) {
     navigation.navigate("AddNote", {
       OrderId: OrderId,
     });
+    refRBSheet.current.close();
   }
 
   const refetchworkorder = async () => {
-    console.log("refetch work order");
     try {
       const response = await axios.get(
         `${BASE_URL}/work_order/by_id/${OrderId}`,
@@ -198,18 +153,75 @@ export default function ViewWorkOrder({ navigation, route }) {
         }
       );
       if (response.status === 200) {
+        const workorderData = response?.data?.workOrder;
         setData(response?.data);
         setNoteData(response?.data?.workOrder?.notes);
+        setFilteredWO(extractAllowedFields(workorderData, allowedFields));
       }
     } catch (error) {
       console.log("🚀 ~ getWorkOrderById ~ error:", error);
       setIsLoading(false);
+    }
+  };
+  // Allowed fields
+  console.log("🚀 ~ refetchworkorder ~ userData:", userData);
+  const allowedFields = [
+    "work_order_id",
+    "client_id",
+    "location_id",
+    "client_name",
+    "work_order_type",
+    "generated_date",
+    "generated_time",
+    "po_number",
+    "client_site",
+    "job_location",
+    "service_date",
+    "contact_person",
+    "contact_phone_number",
+    "contact_mail_id",
+    "issue",
+    "status",
+    "local_onsite_person",
+    "local_onsite_person_contact",
+    "client_emp_user_id",
+  ];
+  const extractAllowedFields = (obj, allowedFields) => {
+    return allowedFields.reduce((acc, field) => {
+      if (obj.hasOwnProperty(field)) {
+        acc[field] = obj[field];
+      }
+      return acc;
+    }, {});
+  };
 
-      // Snackbar.show({
-      //   text: error.response.data.message,
-      //   duration: 4000,
-      //   backgroundColor: AppColors.red,
-      // });
+  const handleEditWorkorder = async (item) => {
+    setStatus({ label: item?.label, value: item?.value });
+    setFilteredWO((prev) => ({ ...prev, status: item?.value }));
+    SetEditStatus(false);
+    setIsLoading(true);
+    try {
+      const response = await axios.post(
+        `${BASE_URL}work_order/update_ticket`,
+        filteredWO,
+        {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        toast.show(response?.data?.message, {
+          type: "success",
+        });
+        setIsLoading(false);
+      }
+    } catch (error) {
+      console.log("🚀 ~ getWorkOrderById ~ error:", error);
+      setIsLoading(false);
+      toast.show(error?.response?.data?.message, {
+        type: "danger",
+      });
     }
   };
   useFocusEffect(
@@ -220,8 +232,64 @@ export default function ViewWorkOrder({ navigation, route }) {
       };
     }, [navigation])
   );
-  console.log(date, "date");
+  const onEditStatusPress = () => {
+    SetEditStatus(true);
+    refRBSheet.current?.close();
+  };
+  const BottomSheetData = [
+    {
+      label: "Add Note",
+      iconFamily: "MaterialIcons",
+      iconName: "note-add",
+      value: "add_note",
+      onPress: navigateToAddNote,
+    },
+    {
+      label: "Edit Workorder Status",
+      iconFamily: "MaterialCommunityIcons",
+      iconName: "list-status",
+      value: "edit_status",
+      onPress: onEditStatusPress,
+    },
+  ];
 
+  const renderItem = (item, index) => {
+    return (
+      <>
+        <View style={styles.item}>
+          <Text style={styles.selectedTextStyle}>{item.label}</Text>
+        </View>
+        <View
+          style={{
+            borderBottomColor: AppColors.lightgrey,
+            borderBottomWidth: 1,
+            alignSelf: "center",
+            width: "100%",
+          }}
+        ></View>
+      </>
+    );
+  };
+  const handleSetStatus = (item) => {
+    Alert.alert(
+      "Are you sure?",
+      "Do you really want to edit workorder status?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => handleEditWorkorder(item),
+        },
+      ],
+      { cancelable: false }
+    );
+  };
+
+  console.log(status, "status");
   return (
     <SafeAreaView style={styles.conatiner}>
       <Loader loading={isLoading || isLoading1 || isLoading2} />
@@ -266,7 +334,12 @@ export default function ViewWorkOrder({ navigation, route }) {
             <MyText fontType="bold" style={{ fontSize: 22 }}>
               Ticket
             </MyText>
-
+            <CustomIcon
+              name="ellipsis-vertical"
+              onPress={() => {
+                refRBSheet.current.open();
+              }}
+            />
             {/* { ticket ?
                      <CustomButton
                      title={"Submit"}
@@ -291,14 +364,88 @@ export default function ViewWorkOrder({ navigation, route }) {
               isDisabled={!ticket}
             />
             <CustomDropdown
-              label="Choose Location"
+              label="Location"
               options={locationData?.locations}
               type="location"
               defaultOption={location}
               onSelect={setLocation}
               isDisabled={typeof locationData === "undefined" || !ticket}
             />
-
+            {data?.workOrder?.client_location?.address_line_two && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  Address Line 2
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.client_location?.address_line_two}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
+            {data?.workOrder?.client_location?.address_line_three && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  Address Line 3
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.client_location?.address_line_three}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
+            {data?.workOrder?.client_location?.city && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  City
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.client_location?.city}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
+            {data?.workOrder?.client_location?.state && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  State
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.client_location?.state}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
+            {data?.workOrder?.client_location?.zipcode && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  Zip Code
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.client_location?.zipcode}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
             <CustomInput
               control={control}
               errors={errors}
@@ -313,7 +460,6 @@ export default function ViewWorkOrder({ navigation, route }) {
               label="PO Number"
               isDisabled={!ticket}
             />
-
             <CustomInput
               control={control}
               errors={errors}
@@ -321,7 +467,36 @@ export default function ViewWorkOrder({ navigation, route }) {
               label="Client Site"
               isDisabled={!ticket}
             />
-
+            {data?.workOrder?.local_onsite_person && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  Local Contact Person
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.local_onsite_person}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
+            {data?.workOrder?.local_onsite_person_contact && (
+              <>
+                <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                  Local Contact Phone
+                </MyText>
+                <View style={[styles.viewcontainer, styles.outlined]}>
+                  <TextInput
+                    value={data?.workOrder?.local_onsite_person_contact}
+                    // value={}
+                    style={[styles.default]}
+                    multiline
+                  />
+                </View>
+              </>
+            )}
             <CustomInput
               control={control}
               errors={errors}
@@ -329,7 +504,6 @@ export default function ViewWorkOrder({ navigation, route }) {
               label="Contact Person"
               isDisabled={!ticket}
             />
-
             <CustomInput
               control={control}
               errors={errors}
@@ -337,7 +511,6 @@ export default function ViewWorkOrder({ navigation, route }) {
               label="Contact Phone"
               isDisabled={!ticket}
             />
-
             <CustomInput
               control={control}
               errors={errors}
@@ -345,7 +518,6 @@ export default function ViewWorkOrder({ navigation, route }) {
               label="Contact Email"
               isDisabled={!ticket}
             />
-
             <CustomInput
               control={control}
               errors={errors}
@@ -353,22 +525,29 @@ export default function ViewWorkOrder({ navigation, route }) {
               label="Issue"
               isDisabled={!ticket}
             />
-            <CustomDropdown
-              label="Status"
-              options={["Open", "Project Completed"]}
-              type="status"
-              defaultOption={status}
-              onSelect={setStatus}
-              isDisabled={!ticket}
-            />
-            <CustomInput
-              control={control}
-              errors={errors}
-              name="Service Date"
-              label="Service Date"
-              isDisabled={!ticket}
-            />
 
+            <View style={{ marginTop: hp(1) }}>
+              <MyText style={{ marginVertical: 5, color: AppColors.black }}>
+                Status
+              </MyText>
+              <Dropdown
+                style={styles.dropdown}
+                placeholderStyle={styles.placeholderStyle}
+                selectedTextStyle={styles.selectedTextStyle}
+                iconStyle={styles.iconStyle}
+                data={StatusData}
+                labelField="label"
+                valueField="value"
+                placeholder="Select status"
+                value={status?.value}
+                itemTextStyle={styles.itemTextStyle}
+                onChange={handleSetStatus}
+                renderItem={renderItem}
+                disable={!editStatus}
+                maxHeight={hp(20)}
+                containerStyle={{ borderRadius: fp(1.4), padding: hp(0.8) }}
+              />
+            </View>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
               Service Date
             </MyText>
@@ -380,7 +559,6 @@ export default function ViewWorkOrder({ navigation, route }) {
                 multiline
               />
             </View>
-
             {/* <CustomDatePicker
               setDate={setDate}
               date={date}
@@ -412,7 +590,34 @@ export default function ViewWorkOrder({ navigation, route }) {
             refetchworkorder={refetchworkorder}
           />
         )}
+        {data?.workOrder?.inventories &&
+          data?.workOrder?.inventories.length !== 0 && (
+            <ViewWOInventories InventoriesData={data?.workOrder?.inventories} />
+          )}
       </KeyboardAwareScrollView>
+      <RBSheet
+        ref={refRBSheet}
+        useNativeDriver={false}
+        height={hp(25)}
+        draggable
+        customStyles={bottomSheetStyles}
+        customModalProps={{
+          animationType: "slide",
+          statusBarTranslucent: true,
+        }}
+        customAvoidingViewProps={{
+          enabled: false,
+        }}
+      >
+        <BottomSheetItem
+          BottomSheetData={
+            userData?.user?.user_type == "Admin" ||
+            userData?.user?.user_type == "Subadmin"
+              ? BottomSheetData
+              : [BottomSheetData[0]]
+          }
+        />
+      </RBSheet>
     </SafeAreaView>
   );
 }
@@ -427,6 +632,24 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
+  },
+  dropdown: {
+    height: 50,
+    backgroundColor: AppColors.darkgrey,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  placeholderStyle: {
+    // fontSize: 16,
+    color: AppColors.grey,
+    fontFamily: Fonts.REGULAR,
+  },
+  selectedTextStyle: {
+    // fontSize: 16,
+    fontFamily: Fonts.REGULAR,
+    borderRadius: fp(1),
+    color: AppColors.black,
   },
   card: {
     backgroundColor: AppColors.white,
@@ -450,5 +673,18 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     borderColor: AppColors.darkgrey,
+  },
+  itemTextStyle: {
+    fontSize: 16,
+    color: AppColors.red,
+    fontFamily: Fonts.REGULAR,
+  },
+  iconStyle: {
+    width: 28,
+    height: 28,
+    color: "black",
+  },
+  item: {
+    padding: 15,
   },
 });

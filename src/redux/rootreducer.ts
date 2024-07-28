@@ -8,5 +8,6 @@ export const rootReducer = combineReducers({
   auth: authSlice,
   QRData: QRDataReducer,
   CommonData: CommonDataReducer,
+
   [rtkClient.reducerPath]: rtkClient.reducer,
 });

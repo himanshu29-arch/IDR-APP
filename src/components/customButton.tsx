@@ -1,4 +1,4 @@
-import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
+import { View, TouchableOpacity, StyleSheet } from "react-native";
 import React from "react";
 import MyText from "./customtext";
 import { AppColors } from "../utils/colors";
@@ -7,13 +7,22 @@ type props = {
   isdisabled?: boolean;
   title: string;
   onPress: () => void;
+  _width: StyleSheet.NamedStyles;
 };
-export default function CustomButton({ isdisabled, title, onPress }: props) {
+export default function CustomButton({
+  isdisabled,
+  title,
+  onPress,
+  _width = wp(90),
+}: props) {
   return (
     <>
       {isdisabled ? (
         <View
-          style={[styles.container, { backgroundColor: AppColors.iconsGrey }]}
+          style={[
+            styles.container,
+            { backgroundColor: AppColors.iconsGrey, width: _width },
+          ]}
         >
           <MyText fontType="InterBold" style={styles.txt}>
             {title}
@@ -21,7 +30,10 @@ export default function CustomButton({ isdisabled, title, onPress }: props) {
         </View>
       ) : (
         <TouchableOpacity
-          style={[styles.container, { backgroundColor: AppColors.primary }]}
+          style={[
+            styles.container,
+            { backgroundColor: AppColors.primary, width: _width },
+          ]}
           onPress={onPress}
         >
           <MyText fontType="InterBold" style={styles.txt}>
@@ -38,9 +50,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     padding: 10,
     borderRadius: 10,
-    width: wp(90),
     alignSelf: "center",
-    // marginTop: 30
   },
   txt: {
     fontSize: 14,

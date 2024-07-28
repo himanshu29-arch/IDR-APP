@@ -1,22 +1,18 @@
 import {
   View,
-  Text,
   SafeAreaView,
   StyleSheet,
   StatusBar,
   KeyboardAvoidingView,
   ScrollView,
-  Alert,
-  ToastAndroid,
 } from "react-native";
-import React, { useDebugValue, useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import CustomInput from "../../components/customInput";
 import MyText from "../../components/customtext";
 import { ImagePaths } from "../../utils/imagepaths";
 import { Image } from "react-native";
 import { AppColors } from "../../utils/colors";
 import { SCREEN_HEIGHT, SCREEN_WIDTH } from "../../utils/Dimensions";
-import CustomIcon from "../../components/customIcon";
 import CustomButton from "../../components/customButton";
 import { useForm } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
@@ -26,6 +22,17 @@ import { useDispatch } from "react-redux";
 import { signIn } from "../../redux/slices/authSlice";
 import { useToast } from "react-native-toast-notifications";
 import Loader from "../../components/Loader";
+import CustomIcon from "../../components/customIcon";
+import {
+  clearUserEmail,
+  getCheckStatus,
+  getUserEmail,
+  getUserPassword,
+  storeCheckStatus,
+  storeUserEmail,
+  storeUserPassword,
+} from "../../utils/storage/RememberMe/RememberMeStorage";
+import { saveString } from "../../utils/storage/storageHelpers";
 
 type prop = { email: string; password: string };
 
@@ -35,6 +42,10 @@ export default function Login({ navigation }) {
   const [ischeck, setIsCheck] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const dispatch = useDispatch();
+  const [email, setEmail] = useState("");
+  const [emailLoaded, setEmailLoaded] = useState(false);
+  const [password, setPassword] = useState("");
+
   const {
     control,
     handleSubmit,
@@ -42,12 +53,14 @@ export default function Login({ navigation }) {
   } = useForm({
     mode: "all",
     defaultValues: {
-      email: "",
-      password: "",
+      email: email,
+      password: password,
     },
+    values: { email: email, password: password },
     resolver: yupResolver(loginValidationSchema),
   });
-
+  console.log("🚀 ~ Login ~ email:", email);
+  console.log("🚀 ~ Login ~ password:", password);
   const toast = useToast();
 
   const onSubmit = (data: prop) => {
@@ -56,14 +69,17 @@ export default function Login({ navigation }) {
       email_id: email,
       password: password,
     };
-
+    storeUserEmail(email);
+    storeUserPassword(password);
     login(body)
       .unwrap()
       .then((payload) => {
+        console.log("🚀 ~ .then ~ payload:", payload);
         toast.show(payload.message, {
           type: "success",
         });
         dispatch(signIn({ payload: payload, rememberMe: ischeck }));
+        saveString("token", payload.token);
       })
       .catch((error) => {
         toast.show(error.data.message, {
@@ -71,6 +87,33 @@ export default function Login({ navigation }) {
         });
       });
   };
+  useEffect(() => {
+    const fetchValuesFormStorage = async () => {
+      try {
+        const { emailValue } = await getUserEmail();
+        const { passValue } = await getUserPassword();
+        console.log("🚀 ~ fetchValuesFormStorage ~ passValue:", passValue);
+        const { checkValue } = await getCheckStatus();
+        console.log("got status value:", checkValue);
+        console.log("got email value:", emailValue);
+        setIsCheck(checkValue);
+        setEmail(emailValue);
+        setPassword(passValue);
+
+        setEmailLoaded(true);
+        if (!checkValue) {
+          clearUserEmail();
+        }
+      } catch (error) {
+        console.error("Error fetching checkValue or email:", error);
+      }
+    };
+    fetchValuesFormStorage();
+  }, []);
+  async function handleRememberMe() {
+    await storeCheckStatus(!ischeck);
+    setIsCheck(!ischeck);
+  }
   return (
     <KeyboardAvoidingView style={{ flex: 1 }}>
       <SafeAreaView
@@ -108,7 +151,9 @@ export default function Login({ navigation }) {
               label="Email Address"
               isOutline
               leftIcon="mail-outline"
+              defaultValue={email}
               errors={errors}
+              externalValue={"areact native"}
             />
 
             <CustomInput
@@ -122,18 +167,19 @@ export default function Login({ navigation }) {
               onRighticonPress={() => setShowPassword(!showPassword)}
               secureTextEntry={showPassword}
               errors={errors}
+              externalValue={password}
             />
 
-            {/* <View style={styles.conditions}>
+            <View style={styles.conditions}>
               <CustomIcon
                 name={ischeck ? "checkbox" : "square-outline"}
-                onPress={() => setIsCheck(!ischeck)}
-                color={ischeck ? "#7F265B" : AppColors.black}
+                onPress={handleRememberMe}
+                color={ischeck ? AppColors?.primary : AppColors.black}
               />
               <MyText style={{ marginLeft: 10, color: AppColors.iconsGrey }}>
                 Remember me
               </MyText>
-            </View> */}
+            </View>
             <MyText
               style={{
                 fontSize: 16,

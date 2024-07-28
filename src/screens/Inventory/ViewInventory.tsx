@@ -6,6 +6,8 @@ import {
   StatusBar,
   TextInput,
   TouchableOpacity,
+  Alert,
+  Text,
 } from "react-native";
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AppColors } from "../../utils/colors";
@@ -13,41 +15,74 @@ import { SCREEN_WIDTH } from "../../utils/Dimensions";
 import Loader from "../../components/Loader";
 import CustomIcon from "../../components/customIcon";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
-import { ShadowStyle } from "../../utils/constants";
+import { Fonts, ShadowStyle } from "../../utils/constants";
 import MyText from "../../components/customtext";
 import { useToast } from "react-native-toast-notifications";
 import { useFocusEffect } from "@react-navigation/native";
 import { fp, hp, wp } from "../../utils/resDimensions";
 import { BASE_URL } from "../../services/apiConfig";
 import axios from "axios";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import CustomButton from "../../components/customButton";
-import FontAwesome from "react-native-vector-icons/FontAwesome";
+
 import RBSheet from "react-native-raw-bottom-sheet";
-import MaterialIcons from "react-native-vector-icons/MaterialIcons";
+import { BottomSheetItem } from "../../components/BottomSheetItem";
+import { Dropdown } from "react-native-element-dropdown";
+import {
+  keysToRemoveFromInventoryResToEditInventory,
+  removeKeys,
+} from "../../utils";
 
 export default function ViewInventory({ navigation, route }) {
   const { InventoryId } = route.params;
-  const [client, setClient] = useState<string | object>("");
+
   const toast = useToast();
   const [isEdit, setIsEdit] = useState(false);
+
+  const [menuPress, setMenuPress] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState({});
-  const [apiBody, setApiBody] = useState({
-    inventory_id: InventoryId,
-    quantity: "",
-    label: "",
-    sku: "",
-    description: "",
-  });
+  const [locationOptions, setLocationOptions] = useState([]);
+  const [location, setLocation] = useState({});
+  const [apiBody, setApiBody] = useState({});
   const { userData } = useSelector((state: RootState) => state.auth);
+
+  const getAllLocations = async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await axios.get(`${BASE_URL}/inv_loc/all`, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      if (response.status === 200) {
+        setIsLoading(false);
+        const data = response?.data?.locations.map((location) => ({
+          label: location.location,
+          value: location.inventory_location_id,
+        }));
+
+        setLocationOptions(data);
+      }
+    } catch (error) {
+      console.log("🚀 ~ AddInventory --> handleGetLocation ~ error:", error);
+      setIsLoading(false);
+      toast.show(error?.response?.data?.message, {
+        type: "danger",
+      });
+    }
+  };
+
+  useEffect(() => {
+    getAllLocations();
+  }, []);
 
   const refRBSheet = useRef();
   useEffect(() => {
     const focusListener = navigation.addListener("focus", () => {
       fetchInventory();
-      // getAllClient();
     });
 
     // Clean up the listener on component unmount
@@ -60,18 +95,28 @@ export default function ViewInventory({ navigation, route }) {
     fetchInventory();
   }, [InventoryId]);
 
-  useFocusEffect(
-    useCallback(() => {
-      fetchInventory();
-      return () => {
-        // Clean up function if needed
-      };
-    }, [navigation])
-  );
+  // useFocusEffect(
+  //   useCallback(() => {
+  //     fetchInventory();
+  //     return () => {
+  //       // Clean up function if needed
+  //     };
+  //   }, [navigation])
+  // );
 
+  const handleSetLocation = (item) => {
+    setLocation((prev) => (prev === item ? null : item));
+  };
+
+  const renderItem = (item, index) => {
+    return (
+      <View style={styles.item}>
+        <Text style={styles.selectedTextStyle}>{item.label}</Text>
+      </View>
+    );
+  };
   const fetchInventory = async () => {
     setIsLoading(true);
-    console.log("fetch inventory by id");
     try {
       const response = await axios.get(`${BASE_URL}inventory/${InventoryId}`, {
         headers: {
@@ -82,24 +127,22 @@ export default function ViewInventory({ navigation, route }) {
         setIsLoading(false);
         const inventoryData = response?.data?.inventory;
         setData(inventoryData);
-        setApiBody({
-          inventory_id: inventoryData?.inventory_id,
-          quantity: inventoryData.quantity,
-          label: inventoryData.label,
-          sku: inventoryData.sku,
-          description: inventoryData.description,
-        });
-        console.log(
-          "🚀 ~ fetchInventory ~ response?.data?.inventory:",
-          response?.data
+        const apiBody = removeKeys(
+          inventoryData,
+          keysToRemoveFromInventoryResToEditInventory
         );
+
+        setLocation({
+          label: inventoryData.location,
+          value: inventoryData.location_id,
+        });
+        setApiBody(apiBody);
       }
     } catch (error) {
       setIsLoading(false);
-      toast.show(error?.response?.data, {
+      toast.show(error?.response?.data?.message, {
         type: "danger",
       });
-      console.log("🚀 ~ getWorkOrderById ~ error:", error);
     }
   };
   const handleSubmit = async () => {
@@ -122,13 +165,15 @@ export default function ViewInventory({ navigation, route }) {
       if (response.status === 200) {
         setIsLoading(false);
         setIsEdit(false);
-        console.log("response?.data", response?.data);
+        toast.show(response?.data?.message, {
+          type: "success",
+        });
+        navigation?.navigate("Inventory");
       }
     } catch (error) {
-      console.log("🚀 ~ handleSubmit ~ error response:", error?.response);
-      console.log("🚀 ~ handleSubmit ~ error message:", error?.message);
+      console.log("🚀 ~ handleSubmit ~ error response:", error?.response?.data);
       setIsLoading(false);
-      toast.show(error?.response?.data, {
+      toast.show(error?.response?.data?.message, {
         type: "danger",
       });
     }
@@ -147,6 +192,75 @@ export default function ViewInventory({ navigation, route }) {
     refRBSheet.current.close();
   };
 
+  const onDeleteConfirm = async () => {
+    setIsLoading(true);
+    let url = `${BASE_URL}inventory/${InventoryId}`;
+    try {
+      const response = await axios.delete(url, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      if (response.status === 200) {
+        navigation?.navigate("Inventory");
+        setIsLoading(false);
+      }
+    } catch (error) {
+      setIsLoading(false);
+    }
+  };
+
+  const handleDeleteInventory = () => {
+    Alert.alert(
+      "Are you sure?",
+      "Do you really want to delete this Inventory?",
+      [
+        {
+          text: "Cancel",
+          onPress: () => console.log("Cancel Pressed"),
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => onDeleteConfirm(),
+        },
+      ],
+      { cancelable: false }
+    );
+    refRBSheet.current.close();
+  };
+
+  const BottomSheetData = [
+    {
+      label: "Transfer Inventory to Workorder",
+      iconFamily: "FontAwesome",
+      iconName: "share-square-o",
+      value: "tranfer_inventory_wo",
+      onPress: WOtranferPress,
+    },
+    {
+      label: "Transfer Inventory to Location",
+      iconFamily: "MaterialIcons",
+      iconName: "share-location",
+      value: "transfer_inventory_loc",
+      onPress: LocTransferPress,
+    },
+  ];
+
+  const BottomSheetDataDeleteItem = [
+    {
+      label: "Delete Inventory",
+      iconFamily: "Ionicons",
+      iconName: "trash-bin",
+      value: "delete_inventory",
+      onPress: handleDeleteInventory,
+    },
+  ];
+
+  const userType = userData?.user?.user_type;
+
+  const isNotIDROrClientEmployee =
+    userType !== "IDR Employee" && userType !== "Client Employee";
   return (
     <SafeAreaView style={styles.conatiner}>
       <Loader loading={isLoading} />
@@ -194,6 +308,13 @@ export default function ViewInventory({ navigation, route }) {
             >
               Details
             </MyText>
+            <CustomIcon
+              name="ellipsis-vertical"
+              onPress={() => {
+                setMenuPress(true);
+                refRBSheet.current.open();
+              }}
+            />
           </View>
           <View style={{}}>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
@@ -206,7 +327,7 @@ export default function ViewInventory({ navigation, route }) {
                 onChangeText={(txt) => handleChange("make", txt)}
                 style={[styles.default]}
                 multiline
-                editable={false}
+                editable={isEdit}
               />
             </View>
           </View>
@@ -225,21 +346,7 @@ export default function ViewInventory({ navigation, route }) {
               />
             </View>
           </View>
-          <View style={{ marginTop: hp(1) }}>
-            <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-              Label
-            </MyText>
-            <View style={[styles.viewcontainer, styles.outlined]}>
-              <TextInput
-                // value={item.comments}
-                value={data?.label}
-                onChangeText={(txt) => handleChange("label", txt)}
-                style={[styles.default]}
-                editable={isEdit}
-                multiline
-              />
-            </View>
-          </View>
+
           <View style={{ marginTop: hp(1) }}>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
               Device type
@@ -251,7 +358,7 @@ export default function ViewInventory({ navigation, route }) {
                 onChangeText={(txt) => handleChange("device_type", txt)}
                 style={[styles.default]}
                 multiline
-                editable={false}
+                editable={isEdit}
               />
             </View>
           </View>
@@ -281,7 +388,7 @@ export default function ViewInventory({ navigation, route }) {
                 value={data?.size}
                 onChangeText={(txt) => handleChange("size", txt)}
                 style={[styles.default]}
-                editable={false}
+                editable={isEdit}
                 multiline
                 keyboardType="number-pad"
               />
@@ -297,41 +404,35 @@ export default function ViewInventory({ navigation, route }) {
                 value={data?.color}
                 onChangeText={(txt) => handleChange("color", txt)}
                 style={[styles.default]}
-                editable={false}
-                multiline
-              />
-            </View>
-          </View>
-          <View style={{ marginTop: hp(1) }}>
-            <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-              Sku
-            </MyText>
-            <View style={[styles.viewcontainer, styles.outlined]}>
-              <TextInput
-                // value={item.comments}
-                value={data?.sku}
-                onChangeText={(txt) => handleChange("sku", txt)}
-                style={[styles.default]}
-                multiline
                 editable={isEdit}
+                multiline
               />
             </View>
           </View>
+
           <View style={{ marginTop: hp(1) }}>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
               Location
             </MyText>
-            <View style={[styles.viewcontainer, styles.outlined]}>
-              <TextInput
-                // value={item.comments}
-                value={data?.location}
-                onChangeText={(txt) => handleChange("gc", txt)}
-                style={[styles.default]}
-                multiline
-                editable={false}
-              />
-            </View>
+            <Dropdown
+              style={styles.dropdown}
+              placeholderStyle={styles.placeholderStyle}
+              selectedTextStyle={styles.selectedTextStyle}
+              iconStyle={styles.iconStyle}
+              data={locationOptions}
+              labelField="label"
+              valueField="value"
+              placeholder="Select Location"
+              value={location?.value}
+              itemTextStyle={styles.itemTextStyle}
+              onChange={handleSetLocation}
+              renderItem={renderItem}
+              maxHeight={hp(20)}
+              disable={!isEdit}
+              containerStyle={{ borderRadius: fp(1.4), padding: hp(0.8) }}
+            />
           </View>
+
           <View style={{ marginTop: hp(1) }}>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
               Description
@@ -348,22 +449,25 @@ export default function ViewInventory({ navigation, route }) {
             </View>
           </View>
         </View>
-
-        {isEdit ? (
+        {isNotIDROrClientEmployee ? (
           <View style={{ marginVertical: hp(2) }}>
-            <CustomButton title={"Submit"} onPress={handleSubmit} />
+            <CustomButton
+              title={isEdit ? "Submit" : "Edit"}
+              onPress={isEdit ? handleSubmit : () => setIsEdit(true)}
+            />
           </View>
-        ) : (
-          <View style={{ marginVertical: hp(2) }}>
-            <CustomButton title={"Edit"} onPress={() => setIsEdit(true)} />
-          </View>
+        ) : null}
+        {userData?.user?.user_type !== "Client Employee" && (
+          <CustomButton
+            title="Transfer Inventory"
+            onPress={() => {
+              setMenuPress(false);
+              refRBSheet.current.open();
+            }}
+            isdisabled={false}
+            _width={wp(90)}
+          />
         )}
-
-        <CustomButton
-          title="Transfer Inventory"
-          onPress={() => refRBSheet.current.open()}
-          isdisabled={false}
-        />
       </KeyboardAwareScrollView>
       <RBSheet
         ref={refRBSheet}
@@ -398,82 +502,16 @@ export default function ViewInventory({ navigation, route }) {
         }}
       >
         <BottomSheetItem
-          WOtranferPress={WOtranferPress}
-          LocTransferPress={LocTransferPress}
+          BottomSheetData={
+            menuPress == true
+              ? BottomSheetDataDeleteItem
+              : userData?.user?.user_type === "IDR Employee"
+              ? [BottomSheetData[0]]
+              : BottomSheetData
+          }
         />
       </RBSheet>
     </SafeAreaView>
-  );
-}
-
-export function BottomSheetItem({ WOtranferPress, LocTransferPress }) {
-  return (
-    <View
-      style={[
-        {
-          marginHorizontal: wp(4),
-          marginVertical: hp(2),
-
-          // alignItems: "center",
-        },
-      ]}
-    >
-      <MyText style={{ marginVertical: 5, color: AppColors.darkgreyColor }}>
-        Options
-      </MyText>
-      {/* <View></View> */}
-      <TouchableOpacity
-        style={{
-          marginTop: hp(2),
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-        onPress={WOtranferPress}
-      >
-        <FontAwesome name="share-square-o" size={22} color={AppColors.black} />
-        <MyText
-          style={{
-            marginVertical: 5,
-            color: AppColors.black,
-            fontSize: fp(2),
-            marginLeft: wp(4),
-          }}
-        >
-          Transfer Inventory to Workorder
-        </MyText>
-      </TouchableOpacity>
-      <View
-        style={{
-          height: hp(0.1),
-          backgroundColor: AppColors.bluishgrey,
-          marginTop: hp(1.2),
-        }}
-      />
-      <TouchableOpacity
-        style={{
-          marginTop: hp(2),
-          flexDirection: "row",
-          alignItems: "center",
-        }}
-        onPress={LocTransferPress}
-      >
-        <MaterialIcons
-          name="share-location"
-          size={24}
-          color={AppColors.black}
-        />
-        <MyText
-          style={{
-            marginVertical: 5,
-            color: AppColors.black,
-            fontSize: fp(2),
-            marginLeft: wp(4),
-          }}
-        >
-          Transfer Inventory to Location
-        </MyText>
-      </TouchableOpacity>
-    </View>
   );
 }
 
@@ -506,6 +544,11 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderRadius: 10,
   },
+  itemTextStyle: {
+    fontSize: 16,
+    color: AppColors.red,
+    fontFamily: Fonts.REGULAR,
+  },
   viewcontainer: {
     flexDirection: "row",
     alignItems: "center",
@@ -516,6 +559,35 @@ const styles = StyleSheet.create({
     bottom: 30,
     right: 30,
     justifyContent: "center",
+    alignItems: "center",
+  },
+  dropdown: {
+    height: 40,
+    backgroundColor: AppColors.darkgrey,
+    borderRadius: 12,
+    padding: 12,
+    marginBottom: 12,
+  },
+  placeholderStyle: {
+    // fontSize: 16,
+    color: AppColors.grey,
+    fontFamily: Fonts.REGULAR,
+  },
+  selectedTextStyle: {
+    // fontSize: 16,
+    fontFamily: Fonts.REGULAR,
+    borderRadius: fp(1),
+    color: AppColors.black,
+  },
+  iconStyle: {
+    width: 28,
+    height: 28,
+    color: "black",
+  },
+  item: {
+    padding: 15,
+    flexDirection: "row",
+    justifyContent: "space-between",
     alignItems: "center",
   },
 });

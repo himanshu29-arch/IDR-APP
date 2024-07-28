@@ -1,4 +1,5 @@
 import { IconsPath } from "./InconsPath";
+import { hp, wp } from "./resDimensions";
 
 export const Fonts = {
   REGULAR: "Roboto-Regular",
@@ -64,3 +65,23 @@ export const StatusData = [
   { label: "Reviewing", value: "Reviewing" },
   { label: "Closed", value: "Closed" },
 ];
+
+export const bottomSheetStyles = {
+  wrapper: {
+    backgroundColor: "transparent",
+    shadowColor: "#000",
+    shadowOffset: {
+      width: 0,
+      height: 4,
+    },
+    shadowOpacity: 0.5,
+    shadowRadius: 4.65,
+    elevation: 6,
+  },
+
+  draggableIcon: {
+    marginTop: hp(3),
+    width: wp(15),
+    backgroundColor: "rgba(236, 236, 236, 1)",
+  },
+};

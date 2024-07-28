@@ -1,15 +1,12 @@
 import {
   View,
-  Text,
   StatusBar,
   Image,
   StyleSheet,
-  FlatList,
   TouchableOpacity,
-  ScrollView,
   SafeAreaView,
 } from "react-native";
-import React, { useState, useEffect } from "react";
+import React from "react";
 import { ImagePaths } from "../../utils/imagepaths";
 import { AppColors } from "../../utils/colors";
 import MyText from "../../components/customtext";
@@ -20,6 +17,7 @@ import CustomButton from "../../components/customButton";
 import { signOut } from "../../redux/slices/authSlice";
 import { useDispatch } from "react-redux";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { wp } from "../../utils/resDimensions";
 
 export default function Settngs({ navigation }) {
   const dispatch = useDispatch();
@@ -89,7 +87,11 @@ export default function Settngs({ navigation }) {
               </TouchableOpacity>
             )
           )}
-          <CustomButton title="Logout" onPress={() => Logout()} />
+          <CustomButton
+            _width={wp(80)}
+            title="Logout"
+            onPress={() => Logout()}
+          />
         </View>
       </View>
     </SafeAreaView>
