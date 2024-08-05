@@ -67,10 +67,10 @@ export default function WOTransfer({ navigation, route }) {
           };
         });
         setAllClient(clientInfo);
-        console.log("🚀 ~ getAllClient ~ response?.data):", response?.data);
+        // console.log("🚀 ~ getAllClient ~ response?.data):", response?.data);
       }
     } catch (error) {
-      console.log("🚀 ~ handleWorkOrderFilter ~ error:", error);
+      console.log("🚀 ~ getAllClient", error);
       setIsLoading(false);
     }
   };
@@ -87,14 +87,16 @@ export default function WOTransfer({ navigation, route }) {
       );
       if (response.status === 200) {
         const workOrders = response?.data?.workorders;
-        console.log(workOrders);
+        console.log("workorders", workOrders);
 
-        const workOrderInfo = workOrders.map((item) => {
-          return {
-            label: item.ticket_number,
-            value: item?.work_order_id,
-          };
-        });
+        const workOrderInfo = workOrders
+          .filter((item) => item.status !== "Closed")
+          .map((item) => {
+            return {
+              label: item.ticket_number,
+              value: item?.work_order_id,
+            };
+          });
         setWorkOrderByClientId(workOrderInfo);
       }
     } catch (error) {

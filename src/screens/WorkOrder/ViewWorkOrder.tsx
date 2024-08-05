@@ -374,7 +374,7 @@ export default function ViewWorkOrder({ navigation, route }) {
             {data?.workOrder?.client_location?.address_line_two && (
               <>
                 <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Address Line 2
+                  Address Line 1
                 </MyText>
                 <View style={[styles.viewcontainer, styles.outlined]}>
                   <TextInput
@@ -389,7 +389,7 @@ export default function ViewWorkOrder({ navigation, route }) {
             {data?.workOrder?.client_location?.address_line_three && (
               <>
                 <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-                  Address Line 3
+                  Address Line 2
                 </MyText>
                 <View style={[styles.viewcontainer, styles.outlined]}>
                   <TextInput
