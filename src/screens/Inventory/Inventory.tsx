@@ -25,12 +25,8 @@ import { BASE_URL } from "../../services/apiConfig";
 import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
-import RBSheet from "react-native-raw-bottom-sheet";
-import { useFocusEffect, useIsFocused } from "@react-navigation/native";
-import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import MultiSelectComponent from "../../components/ElementDropDown";
 import { useToast } from "react-native-toast-notifications";
-import { BottomSheetItem } from "../../components/BottomSheetItem";
 
 export default function Inventory({ navigation }) {
   const { model } = useSelector((state) => state.QRData); // Ensure 'PdfStatus' matches the slice name in your Redux store

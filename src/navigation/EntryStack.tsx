@@ -21,6 +21,8 @@ import AddInventory from "../screens/Inventory/AddInventory";
 import LocTransfer from "../screens/Inventory/TransferInventory/LocTrasfer";
 import WOTransfer from "../screens/Inventory/TransferInventory/WOTransfer";
 import Inventory from "../screens/Inventory/Inventory";
+import ViewEquipment from "../screens/Equipment/ViewEquipment/ViewEquipment";
+import AddEquipment from "../screens/Equipment/AddEquipment/AddEquipment";
 
 const Stack = createNativeStackNavigator();
 
@@ -98,6 +100,8 @@ const AppStack = () => {
       <Stack.Screen name="AddInventory" component={AddInventory} />
       <Stack.Screen name="LocTransfer" component={LocTransfer} />
       <Stack.Screen name="WOTransfer" component={WOTransfer} />
+      <Stack.Screen name="ViewEquipment" component={ViewEquipment} />
+      <Stack.Screen name="AddEquipment" component={AddEquipment} />
     </Stack.Navigator>
   );
 };

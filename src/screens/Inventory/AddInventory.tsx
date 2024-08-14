@@ -19,7 +19,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { Fonts, ShadowStyle } from "../../utils/constants";
 import MyText from "../../components/customtext";
 import { useToast } from "react-native-toast-notifications";
-import { useFocusEffect } from "@react-navigation/native";
 import { fp, hp, wp } from "../../utils/resDimensions";
 import { BASE_URL } from "../../services/apiConfig";
 import axios from "axios";
@@ -30,7 +29,6 @@ import Ionicons from "react-native-vector-icons/Ionicons";
 import Entypo from "react-native-vector-icons/Entypo";
 
 import { launchImageLibrary } from "react-native-image-picker";
-import CustomDropdown from "../../components/customDropdown";
 import { Dropdown } from "react-native-element-dropdown";
 
 export default function AddInventory({ navigation }) {
