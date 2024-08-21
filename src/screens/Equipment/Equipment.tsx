@@ -18,6 +18,7 @@ import { SCREEN_WIDTH } from "../../utils/Dimensions";
 import MyText from "../../components/customtext";
 import Loader from "../../components/Loader";
 import CustomIcon from "../../components/customIcon";
+import MaterialCommunityIcons from "react-native-vector-icons/MaterialCommunityIcons";
 import MultiSelectComponent from "../../components/ElementDropDown";
 import FloatingButton from "../../components/floatingButton";
 import { BASE_URL } from "../../services/apiConfig";
@@ -25,11 +26,22 @@ import axios from "axios";
 import { useSelector } from "react-redux";
 import { RootState } from "../../redux/store";
 import AntDesign from "react-native-vector-icons/AntDesign";
+import { useToast } from "react-native-toast-notifications";
 
 export default function Equipment({ navigation }) {
+  const toast = useToast();
+  const { serial_number } = useSelector((state) => state.EquipmentQRData); // Ensure 'PdfStatus' matches the slice name in your Redux store
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
+  const [selectedLocation, setSelectedLocation] = useState("");
+  const [selectedLocationLabel, setSelectedLocationLabel] = useState("");
+  const [deviceType, setDeviceType] = useState("");
+  const [modelText, setModelText] = useState("");
+  const [searchList, setSearchList] = useState("");
   const [data, setData] = useState([]);
+  const [isParentDropdownOpen, setIsParentDropdownOpen] = useState(true);
+  const [isFilterDisable, setIsFilterDisable] = useState(true);
+  const [locationOptions, setLocationOptions] = useState([]);
 
   const { userData } = useSelector((state: RootState) => state.auth);
   const onRefresh = useCallback(() => {
@@ -37,39 +49,39 @@ export default function Equipment({ navigation }) {
     // Simulate a network request
     setTimeout(() => {
       // Add new data or update the existing data here
-
-      //* add action
       fetchEquipments("");
       setRefreshing(false);
     }, 1000); // Adjust the timeout duration as needed
   }, []);
 
-  useEffect(() => {
-    // if (model == "") {
-    fetchEquipments("");
-    // } else {
-    //   fetchInventoryByQR();
-    // }
-  }, []);
-
   const fetchEquipments = async (value) => {
     setIsLoading(true);
-    console.log("fetch inventory");
+    console.log("fetch equipments");
 
     let url = `${BASE_URL}equipment/all`;
-    // const params = new URLSearchParams();
+    const params = new URLSearchParams();
 
-    // if (selectedLocation) params.append("location", selectedLocationLabel);
-    // if (make) params.append("search", make);
-    // if (modelText) params.append("model", modelText);
-    // if (deviceType) params.append("device_type", deviceType);
+    if (selectedLocation) params.append("location_name", selectedLocationLabel);
+    if (searchList) params.append("search", searchList);
+    if (modelText) params.append("model", modelText);
+    if (deviceType) params.append("device_type", deviceType);
+    console.log("🚀 ~ fetchEquipments ~ deviceType:", deviceType);
+    console.log("🚀 ~ fetchEquipments ~ modelText:", modelText);
+    console.log("🚀 ~ fetchEquipments ~ searchList:", searchList);
+    console.log(
+      "🚀 ~ fetchEquipments ~ selectedLocationLabel:",
+      selectedLocationLabel
+    );
 
-    // if (params.toString()) {
-    //   url += `?${params.toString()}`;
-    // }
+    if (params.toString()) {
+      url += `?${params.toString()}`;
+    }
+    console.log("🚀 ~ fetchEquipments ~ url:", url);
+    console.log("🚀 ~ fetchEquipments ~ userData.token:", userData.token);
+
     try {
       const response = await axios.get(
-        value == "reset" ? `${BASE_URL}inventory/all` : url,
+        value == "reset" ? `${BASE_URL}equipment/all` : url,
         {
           headers: {
             Authorization: `Bearer ${userData.token}`,
@@ -80,12 +92,108 @@ export default function Equipment({ navigation }) {
         setIsLoading(false);
         console.log("data", response?.data);
         setData(response?.data?.data);
-        // toggleParentDropdown();
+        toggleParentDropdown();
       }
     } catch (error) {
-      // toggleParentDropdown();
+      toggleParentDropdown();
       setIsLoading(false);
     }
+  };
+  useEffect(() => {
+    if (selectedLocation || deviceType || searchList || modelText) {
+      setIsFilterDisable(false);
+    } else {
+      setIsFilterDisable(true);
+    }
+  }, [selectedLocation, deviceType, searchList, modelText]);
+
+  const fetchEquipmentByQR = async () => {
+    console.log("fetch equipment by Qr");
+    console.log("🚀 ~ fetchEquipmentByQR ~ serial_number:", serial_number);
+
+    setIsLoading(true);
+    // let cleanUrl = serial_number.replace("http://", "");
+    try {
+      const response = await axios.post(
+        `${BASE_URL}equipment/by_qr`,
+        {
+          serial_number: serial_number,
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${userData.token}`,
+          },
+        }
+      );
+      if (response.status === 200) {
+        setIsLoading(false);
+        console.log("data by QR", response?.data?.equipment);
+        let res = [];
+        res.push(response?.data?.equipment);
+        console.log("🚀 ~ fetchEquipmentByQR ~ res:", res);
+        setData(res);
+      } else {
+        console.log(response?.data);
+      }
+    } catch (error) {
+      console.log("🚀 ~ fetchEquipmentByQR ~ error:", error.data.message);
+      setIsLoading(false);
+    }
+  };
+
+  console.log("🚀 ~ fetchEquipmentByQR ~ Data:", data);
+
+  useEffect(() => {
+    console.log("🚀 ~ useEffect ~ serial_number:", serial_number);
+    if (serial_number == "") {
+      fetchEquipments("");
+    } else {
+      fetchEquipmentByQR();
+    }
+  }, [serial_number]);
+
+  useEffect(() => {
+    getAllLocations();
+  }, []);
+
+  const getAllLocations = async () => {
+    setIsLoading(true);
+
+    try {
+      const response = await axios.get(`${BASE_URL}inv_loc/all`, {
+        headers: {
+          Authorization: `Bearer ${userData.token}`,
+        },
+      });
+      if (response.status === 200) {
+        setIsLoading(false);
+        const data = response?.data?.locations.map((location) => ({
+          label: location.location,
+          value: location.inventory_location_id,
+        }));
+
+        setLocationOptions(data);
+      }
+    } catch (error) {
+      console.log("🚀 ~ AddEquipment --> handleGetLocation ~ error:", error);
+      setIsLoading(false);
+      toast.show(error?.response?.data, {
+        type: "danger",
+      });
+    }
+  };
+
+  function handleResetFilter() {
+    setSelectedLocation("");
+    setDeviceType("");
+    setSearchList("");
+    setModelText("");
+    fetchEquipments("reset");
+    toggleParentDropdown();
+  }
+
+  const toggleParentDropdown = () => {
+    setIsParentDropdownOpen(!isParentDropdownOpen);
   };
 
   return (
@@ -117,11 +225,16 @@ export default function Equipment({ navigation }) {
             >
               Company Equipments
             </MyText>
-            <Pressable style={styles.AC}>
+            <Pressable
+              style={styles.AC}
+              onPress={() => {
+                navigation.navigate("Notifications");
+              }}
+            >
               <CustomIcon name="notifications-outline" />
             </Pressable>
           </View>
-          {/* {userData?.user?.user_type !== "Client Employee" && (
+          {userData?.user?.user_type !== "Client Employee" && (
             <MultiSelectComponent
               //dropDown
               dropdownPlaceholder={"Select Location"}
@@ -138,18 +251,18 @@ export default function Equipment({ navigation }) {
               secondInput={modelText}
               setSecondInput={setModelText}
               // third input
-              thirdInputPlaceholder={"Enter make"}
-              thirdInput={make}
-              setThirdInput={setMake}
+              thirdInputPlaceholder={"Search List"}
+              thirdInput={searchList}
+              setThirdInput={setSearchList}
               // parent dropdown
               isParentDropdownOpen={isParentDropdownOpen}
               toggleParentDropdown={toggleParentDropdown}
-              handleApplyFilter={fetchInventory}
+              handleApplyFilter={fetchEquipments}
               isApplyDisable={isFilterDisable}
               //
               handleResetFilter={handleResetFilter}
             />
-          )} */}
+          )}
 
           {data?.length > 0 ? (
             <FlatList
@@ -168,8 +281,8 @@ export default function Equipment({ navigation }) {
                   <Pressable
                     style={[styles.card, ShadowStyle]}
                     onPress={() =>
-                      navigation.navigate("ViewInventory", {
-                        InventoryId: item.inventory_id,
+                      navigation.navigate("ViewEquipment", {
+                        EquipmentId: item.equipment_id,
                       })
                     }
                   >
@@ -226,13 +339,15 @@ export default function Equipment({ navigation }) {
                       </View>
                       <View>
                         <MyText fontType="medium" style={{ fontSize: 14 }}>
-                          Location
+                          Serial Number
                         </MyText>
                         <MyText style={{ fontSize: 14, marginTop: 10 }}>
                           {item?.serial_number}
                         </MyText>
                       </View>
                     </View>
+
+                    <View></View>
                   </Pressable>
                 );
               }}
@@ -252,9 +367,9 @@ export default function Equipment({ navigation }) {
         </View>
       </ScrollView>
       <View style={styles.buttonContainer}>
-        {/* {model == "" && (
+        {serial_number == "" && (
           <FloatingButton
-            onPress={() => navigation?.navigate("ScanQR")}
+            onPress={() => navigation?.navigate("ScanEquipmentQR")}
             IconComp={
               <MaterialCommunityIcons
                 name="qrcode-scan"
@@ -263,7 +378,7 @@ export default function Equipment({ navigation }) {
               />
             }
           />
-        )} */}
+        )}
 
         <FloatingButton
           onPress={() => navigation?.navigate("AddEquipment")}

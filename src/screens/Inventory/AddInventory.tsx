@@ -127,19 +127,27 @@ export default function AddInventory({ navigation }) {
 
   const handleOpenGallery = async () => {
     if (Platform.OS === "android") {
-      const isStoragePermitted = await PermissionsAndroid.request(
-        PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
-        {
-          title: "Storage Permission",
-          message:
-            "This app needs access to your device storage to read files.",
-          buttonPositive: "OK",
-          buttonNegative: "Cancel",
+      if (Number(Platform.Version) >= 33) {
+      } else {
+        const isStoragePermitted = await PermissionsAndroid.request(
+          PermissionsAndroid.PERMISSIONS.READ_EXTERNAL_STORAGE,
+          {
+            title: "Storage Permission",
+            message:
+              "This app needs access to your device storage to read files.",
+            buttonPositive: "OK",
+            buttonNegative: "Cancel",
+          }
+        );
+        console.log(
+          "🚀 ~ handleOpenGallery ~ isStoragePermitted:",
+          isStoragePermitted
+        );
+
+        if (isStoragePermitted !== PermissionsAndroid.RESULTS.GRANTED) {
+          toast.show("Storage permission denied", { type: "danger" });
+          return;
         }
-      );
-      if (isStoragePermitted !== PermissionsAndroid.RESULTS.GRANTED) {
-        toast.show("Storage permission denied", { type: "danger" });
-        return;
       }
     }
 
@@ -179,6 +187,7 @@ export default function AddInventory({ navigation }) {
       }
     );
   };
+
   const handleSetLocation = (item) => {
     setLocation((prev) => (prev === item ? null : item));
   };
@@ -414,11 +423,15 @@ export default function AddInventory({ navigation }) {
             {/* <View style={[styles.viewcontainer, styles.outlined]}> */}
 
             <Pressable
-              onPress={
+              onPress={() => {
+                console.log(
+                  "🚀 ~ AddInventory ~  Object.keys(imageResponse).length:",
+                  Object.keys(imageResponse).length
+                );
                 Object.keys(imageResponse).length === 0
-                  ? handleOpenGallery
-                  : null
-              }
+                  ? handleOpenGallery()
+                  : null;
+              }}
               style={[
                 {
                   height:

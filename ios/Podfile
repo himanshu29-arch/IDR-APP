@@ -40,7 +40,7 @@ setup_permissions([
   # 'MediaLibrary',
   # 'Microphone',
   # 'Motion',
-  # 'Notifications',
+   'Notifications',
   # 'PhotoLibrary',
   # 'PhotoLibraryAddOnly',
   # 'Reminders',
@@ -49,6 +49,8 @@ setup_permissions([
   # 'StoreKit',
 ])
 
+use_frameworks! :linkage => :static
+$RNFirebaseAsStaticFramework = true 
 
 target 'idr' do
   config = use_native_modules!

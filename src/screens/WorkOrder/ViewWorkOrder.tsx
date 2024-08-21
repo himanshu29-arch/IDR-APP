@@ -154,6 +154,7 @@ export default function ViewWorkOrder({ navigation, route }) {
       );
       if (response.status === 200) {
         const workorderData = response?.data?.workOrder;
+        console.log("🚀 ~ refetchworkorder ~ workorderData:", workorderData);
         setData(response?.data);
         setNoteData(response?.data?.workOrder?.notes);
         setFilteredWO(extractAllowedFields(workorderData, allowedFields));
@@ -592,6 +593,10 @@ export default function ViewWorkOrder({ navigation, route }) {
         )}
         {data?.workOrder?.inventories &&
           data?.workOrder?.inventories.length !== 0 && (
+            <ViewWOInventories InventoriesData={data?.workOrder?.inventories} />
+          )}
+        {data?.workOrder?.equipments &&
+          data?.workOrder?.equipments.length !== 0 && (
             <ViewWOInventories InventoriesData={data?.workOrder?.inventories} />
           )}
       </KeyboardAwareScrollView>

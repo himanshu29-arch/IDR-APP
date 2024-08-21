@@ -253,9 +253,12 @@ export default function WorkOrder({ navigation }) {
               >
                 Work Order
               </MyText>
-              <View style={styles.AC}>
+              <Pressable
+                style={styles.AC}
+                onPress={() => navigation.navigate("Notifications")}
+              >
                 <CustomIcon name="notifications-outline" />
-              </View>
+              </Pressable>
             </View>
 
             <MultiSelectComponent

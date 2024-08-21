@@ -6,7 +6,7 @@ import {
   KeyboardAvoidingView,
   ScrollView,
 } from "react-native";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import CustomInput from "../../components/customInput";
 import MyText from "../../components/customtext";
 import { ImagePaths } from "../../utils/imagepaths";
@@ -33,11 +33,22 @@ import {
   storeUserPassword,
 } from "../../utils/storage/RememberMe/RememberMeStorage";
 import { saveString } from "../../utils/storage/storageHelpers";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 type prop = { email: string; password: string };
 
 export default function Login({ navigation }) {
   const [login, { isLoading }] = useLoginMutation();
+  const fcmTokenref = useRef("");
+  async function getToken() {
+    const token = await AsyncStorage.getItem("fcmtoken");
+    fcmTokenref.current = token || "";
+
+    console.log("🚀 ~ getToken ~ token:", token);
+  }
+  useEffect(() => {
+    getToken();
+  }, []);
 
   const [ischeck, setIsCheck] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -68,6 +79,7 @@ export default function Login({ navigation }) {
     const body = {
       email_id: email,
       password: password,
+      fcm_token: fcmTokenref?.current,
     };
     storeUserEmail(email);
     storeUserPassword(password);

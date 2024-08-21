@@ -18,3 +18,22 @@ export const timeFormatter = (data) => {
   const formattedtime = `${hour}:${minute}`;
   return formattedtime;
 };
+
+export const getFormattedDate = (myd) => {
+  const m = new Date(myd);
+  let month = m.getMonth() + 1;
+  const day = m.getDate();
+  const year = m.getFullYear();
+
+  // Add leading zero to month if less than 10
+  if (month < 10) {
+    month = `0${month}`;
+  }
+
+  const formattedDate = `${day}/${month}/${year}`;
+  return formattedDate;
+};
+
+export const getFullName = (firstName, lastName) => {
+  return `${firstName} ${lastName}`;
+};

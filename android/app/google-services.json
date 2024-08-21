@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "276754271945",
+    "project_id": "idr-mobile-application",
+    "storage_bucket": "idr-mobile-application.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:276754271945:android:bea7eccb09c0a575b30718",
+        "android_client_info": {
+          "package_name": "com.idr"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDI_bWhJt8n6D5bENYRC75tRFOCq0Do2Bo"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

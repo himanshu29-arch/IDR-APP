@@ -257,7 +257,10 @@ export default function Inventory({ navigation }) {
             >
               Inventory
             </MyText>
-            <Pressable style={styles.AC}>
+            <Pressable
+              style={styles.AC}
+              onPress={() => navigation.navigate("Notifications")}
+            >
               <CustomIcon name="notifications-outline" />
             </Pressable>
           </View>

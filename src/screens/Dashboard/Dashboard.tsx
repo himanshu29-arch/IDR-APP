@@ -37,7 +37,9 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { signOut } from "../../redux/slices/authSlice";
 import { useFocusEffect } from "@react-navigation/native";
 import { setQRData } from "../../redux/slices/QRDataSlice";
-
+import messaging from "@react-native-firebase/messaging";
+import { checkAndUploadFCMPermission } from "../../utils/notiHelper";
+import { setEquipmentQRData } from "../../redux/slices/EquipmentQRDataSlice";
 export default function Dashboard({ navigation }) {
   const [select, setSelect] = useState({});
   const [counts, setCounts] = useState({
@@ -110,6 +112,7 @@ export default function Dashboard({ navigation }) {
 
   useEffect(() => {
     dispatch(setQRData(""));
+    dispatch(setEquipmentQRData(""));
   }, []);
 
   const [openWorkOrder, setOpenWorkOrder] = useState([]);
@@ -226,8 +229,8 @@ export default function Dashboard({ navigation }) {
             <View style={[styles.nameBanner, styles.row]}>
               <CustomIcon
                 name="notifications-outline"
-                // onPress={() => navigation.navigate("Notifications")}
-                onPress={() => navigation.navigate("ScanQR")}
+                onPress={() => navigation.navigate("Notifications")}
+                // onPress={() => navigation.navigate("ScanQR")}
               />
             </View>
           </View>

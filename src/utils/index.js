@@ -21,3 +21,21 @@ export const keysToRemoveFromInventoryResToEditInventory = [
   "updated_by",
   "qr",
 ];
+export const keysToRemoveFromEquipmentResToEditEquipment = [
+  "assign_description",
+  "assign_equip_id",
+  "assigned_to",
+  "created_at",
+  "created_by",
+  "deletedAt",
+  "deleted_by",
+  "is_deleted",
+  "mac_address",
+  "label",
+  "qr_image",
+  "sign_in",
+  "sign_out",
+  "updated_at",
+  "updated_by",
+  "work_order_id",
+];

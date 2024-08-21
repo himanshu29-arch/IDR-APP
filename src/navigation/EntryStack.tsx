@@ -23,6 +23,9 @@ import WOTransfer from "../screens/Inventory/TransferInventory/WOTransfer";
 import Inventory from "../screens/Inventory/Inventory";
 import ViewEquipment from "../screens/Equipment/ViewEquipment/ViewEquipment";
 import AddEquipment from "../screens/Equipment/AddEquipment/AddEquipment";
+import EqEmpTransfer from "../screens/Equipment/TransferEquipment/EqEmpTransfer";
+import EqWOTransfer from "../screens/Equipment/TransferEquipment/EqWOTransfer";
+import ScanEquipmentQR from "../screens/QRCode/ScanEquipmentQR";
 
 const Stack = createNativeStackNavigator();
 
@@ -96,12 +99,15 @@ const AppStack = () => {
       <Stack.Screen name="ViewWorkOrder" component={ViewWorkOrder} />
       <Stack.Screen name="Notifications" component={Notifications} />
       <Stack.Screen name="ScanQR" component={ScanQR} />
+      <Stack.Screen name="ScanEquipmentQR" component={ScanEquipmentQR} />
       <Stack.Screen name="ViewInventory" component={ViewInventory} />
       <Stack.Screen name="AddInventory" component={AddInventory} />
       <Stack.Screen name="LocTransfer" component={LocTransfer} />
       <Stack.Screen name="WOTransfer" component={WOTransfer} />
       <Stack.Screen name="ViewEquipment" component={ViewEquipment} />
       <Stack.Screen name="AddEquipment" component={AddEquipment} />
+      <Stack.Screen name="EqEmpTransfer" component={EqEmpTransfer} />
+      <Stack.Screen name="EqWOTransfer" component={EqWOTransfer} />
     </Stack.Navigator>
   );
 };
