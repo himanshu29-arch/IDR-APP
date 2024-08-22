@@ -42,13 +42,9 @@ export default function Login({ navigation }) {
   const fcmTokenref = useRef("");
   async function getToken() {
     const token = await AsyncStorage.getItem("fcmtoken");
-    fcmTokenref.current = token || "";
-
     console.log("🚀 ~ getToken ~ token:", token);
+    return token;
   }
-  useEffect(() => {
-    getToken();
-  }, []);
 
   const [ischeck, setIsCheck] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -74,12 +70,14 @@ export default function Login({ navigation }) {
   console.log("🚀 ~ Login ~ password:", password);
   const toast = useToast();
 
-  const onSubmit = (data: prop) => {
+  const onSubmit = async (data: prop) => {
     const { email, password } = data;
+    const fcmToken = await getToken();
+    console.log("🚀 ~ onSubmit ~ fcmToken:", fcmToken);
     const body = {
       email_id: email,
       password: password,
-      fcm_token: fcmTokenref?.current,
+      fcm_token: fcmToken,
     };
     storeUserEmail(email);
     storeUserPassword(password);

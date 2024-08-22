@@ -26,6 +26,11 @@ import AddEquipment from "../screens/Equipment/AddEquipment/AddEquipment";
 import EqEmpTransfer from "../screens/Equipment/TransferEquipment/EqEmpTransfer";
 import EqWOTransfer from "../screens/Equipment/TransferEquipment/EqWOTransfer";
 import ScanEquipmentQR from "../screens/QRCode/ScanEquipmentQR";
+import {
+  NotificationListener,
+  requestUserPermission,
+} from "../utils/notiHelper";
+import { navigate, navigationRef } from "./RootNavigation";
 
 const Stack = createNativeStackNavigator();
 
@@ -34,6 +39,12 @@ export default function EntryStack() {
   const { isLoggedIn, rememberMe } = useSelector(
     (state: RootState) => state.auth
   );
+
+  useEffect(() => {
+    // handleFCMSetup();
+    requestUserPermission();
+    NotificationListener();
+  }, []);
 
   useEffect(() => {
     setTimeout(() => {
@@ -73,7 +84,7 @@ export default function EntryStack() {
   const initialRoute = resetRoute ? "ResetPassword" : "Login";
 
   return (
-    <NavigationContainer>
+    <NavigationContainer ref={navigationRef}>
       {splash ? (
         <Stack.Screen name="Splash" component={Splash} />
       ) : isLoggedIn ? (

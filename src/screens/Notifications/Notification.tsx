@@ -70,7 +70,8 @@ export default function Notifications({ navigation }) {
         Toast.show(response?.data?.message, {
           type: "success",
         });
-        navigation.goBack();
+        getInvitationDataApi();
+        // navigation.goBack();
       }
     } catch (error) {
       Toast.show(error?.response?.data?.message, {
@@ -103,7 +104,9 @@ export default function Notifications({ navigation }) {
         Toast.show(response?.data?.message, {
           type: "success",
         });
-        navigation.goBack();
+        getInvitationDataApi();
+        // navigation.goBack();
+
         console.log(response?.data);
       }
     } catch (error) {
@@ -145,7 +148,8 @@ export default function Notifications({ navigation }) {
         Toast.show(response?.data?.message, {
           type: "success",
         });
-        console.log(response?.data);
+        getInvitationDataApi();
+        // console.log(response?.data);
       }
     } catch (error) {
       console.log("🚀 ~ return request:", error?.response?.data);

@@ -8,50 +8,71 @@ import { PermissionStatusType } from "./Emum";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import PushNotification from "react-native-push-notification";
 import { CustomAlert } from "../components/CustomAlert";
+import { useToast } from "react-native-toast-notifications";
+import { navigate } from "../navigation/RootNavigation";
 
-export async function checkAndUploadFCMPermission(showModal) {
-  const enabled = await messaging().hasPermission();
+// export async function checkAndUploadFCMPermission() {
+//   const enabled = await messaging().hasPermission();
+//   if (enabled === 1) {
+//     // If permission is already granted, upload the FCM token
+//     await uploadFcmToken();
+//   } else {
+//     const authStatus = await checkNotifications();
+//     const permissionEnabled =
+//       authStatus.status === PermissionStatusType.Granted ||
+//       authStatus.status === PermissionStatusType.Limited;
 
-  if (enabled === messaging.AuthorizationStatus.AUTHORIZED) {
-    // If permission is already granted, upload the FCM token
+//     if (permissionEnabled) {
+//       // Request permission and upload the FCM token
+//       await uploadFcmToken();
+//     } else {
+//       // If permission not granted, show alert to go to settings
+//       showSettingsAlert();
+//       return Promise.reject(new Error("Notification permission not granted"));
+//     }
+//   }
+// }
+export async function checkAndUploadFCMPermission() {
+  const authStatus = await checkNotifications();
+  const permissionEnabled =
+    authStatus.status === PermissionStatusType.Granted ||
+    authStatus.status === PermissionStatusType.Limited;
+
+  if (permissionEnabled) {
+    // Request permission and upload the FCM token
+    await uploadFcmToken();
+  } else {
+    // If permission not granted, show alert to go to settings
+    showSettingsAlert();
+    return Promise.reject(new Error("Notification permission not granted"));
+  }
+}
+export async function requestUserPermission() {
+  const authStatus = await messaging().requestPermission();
+  const enabled =
+    authStatus === messaging.AuthorizationStatus.AUTHORIZED ||
+    authStatus === messaging.AuthorizationStatus.PROVISIONAL;
+  if (enabled) {
+    console.log("Authorization status:", authStatus);
     uploadFcmToken();
   } else {
-    const authStatus = await checkNotifications();
-    const permissionEnabled =
-      authStatus.status === PermissionStatusType.Granted ||
-      authStatus.status === PermissionStatusType.Limited;
-
-    if (permissionEnabled) {
-      // Request permission and upload the FCM token
-      uploadFcmToken();
-    } else {
-      // Show a custom alert to the user by triggering the modal
-      Alert.alert("", "Please allow notification permission from setting.", [
-        {
-          text: "Cancel",
-          onPress: () => handleRequestNotificationAction("cancel"),
-        },
-        {
-          text: "Go to setting",
-          onPress: () => handleRequestNotificationAction("setting"),
-        },
-      ]);
-      return Promise.reject(new Error("Notification permission not granted"));
-    }
+    showSettingsAlert();
   }
 }
 
+const showSettingsAlert = () => {
+  const toast = useToast();
+  toast.show("Please allow notification permission from settings.", {
+    type: "success",
+  });
+};
+
 export const uploadFcmToken = async () => {
   try {
-    const authStatus = await messaging().requestPermission();
-
-    if (authStatus) {
-      const fcmToken = await messaging().getToken();
+    const fcmToken = await messaging().getToken();
+    if (fcmToken) {
       await AsyncStorage.setItem("fcmtoken", fcmToken);
     }
-
-    // Return null if there is no token or permission is not granted
-    return null;
   } catch (error) {
     console.error("Failed to upload FCM token:", error);
     return null;
@@ -61,17 +82,15 @@ export const uploadFcmToken = async () => {
 const handleRequestNotificationAction = (elementName: string) => {
   if (elementName == "setting") {
     Linking.openSettings();
-    setModalVisible(false);
   }
 };
 
-export const isNotificationPermission = async () => {
-  return checkNotifications().then(({ status }) => {
-    const permissionEnabled =
-      status === PermissionStatusType.Granted ||
-      status === PermissionStatusType.Limited;
-    return permissionEnabled;
-  });
+export const requestNotificationPermission = async () => {
+  const { status } = await requestNotifications(["alert", "sound"]);
+  return (
+    status === PermissionStatusType.Granted ||
+    status === PermissionStatusType.Limited
+  );
 };
 
 export const NotificationListener = () => {
@@ -87,20 +106,13 @@ export const NotificationListener = () => {
       title: remotemessage.notification.title,
       message: remotemessage.notification.body,
     });
+    // navigate("Notifications");
   });
   messaging().onNotificationOpenedApp((remotemessage) => {
     PushNotification.localNotification({
       title: remotemessage.notification.title,
       message: remotemessage.notification.body,
     });
-  });
-};
-
-export const requestNotificationPermission = async () => {
-  return requestNotifications(["alert", "sound"]).then(({ status }) => {
-    const permissionEnabled =
-      status === PermissionStatusType.Granted ||
-      status === PermissionStatusType.Limited;
-    return permissionEnabled;
+    // navigate("Notifications");
   });
 };

@@ -40,6 +40,7 @@ export default function EqWOTransfer({ navigation, route }) {
   const [workorder, setWorkorder] = useState({});
   const [technician, setTechnician] = useState({});
   const [date, setDate] = useState(Date);
+  console.log("🚀 ~ EqWOTransfer ~ date:", date);
   const { userData } = useSelector((state: RootState) => state.auth);
 
   useEffect(() => {

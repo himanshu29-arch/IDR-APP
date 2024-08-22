@@ -4,29 +4,17 @@ import EntryStack from "./src/navigation/EntryStack";
 import { Provider } from "react-redux";
 import { persistor, store } from "./src/redux/store";
 import { PersistGate } from "redux-persist/integration/react";
-import { ToastProvider } from "react-native-toast-notifications";
+import { ToastProvider, useToast } from "react-native-toast-notifications";
 import {
   checkAndUploadFCMPermission,
   NotificationListener,
   requestNotificationPermission,
+  requestUserPermission,
 } from "./src/utils/notiHelper";
 import { CustomAlert } from "./src/components/CustomAlert";
 import { checkNotifications } from "react-native-permissions";
+import { useNavigation } from "@react-navigation/native";
 export default function App() {
-  const getToken = async () => {
-    try {
-      await checkAndUploadFCMPermission();
-    } catch (error) {
-      console.error("Error retrieving FCM token:", error);
-    }
-  };
-
-  useEffect(() => {
-    requestNotificationPermission();
-    getToken();
-    NotificationListener();
-  }, []);
-
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>
