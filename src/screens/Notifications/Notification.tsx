@@ -5,6 +5,7 @@ import {
   SafeAreaView,
   Pressable,
   FlatList,
+  RefreshControl,
 } from "react-native";
 import React, { useEffect, useState } from "react";
 import { AppColors } from "../../utils/colors";
@@ -17,23 +18,34 @@ import { RootState } from "../../redux/store";
 import EquipmentCard from "../../components/EquipmentCard";
 import { Toast } from "react-native-toast-notifications";
 import { wp } from "../../utils/resDimensions";
+import Loader from "../../components/Loader";
 
 export default function Notifications({ navigation }) {
   const { userData } = useSelector((state: RootState) => state.auth);
   const [isLoading, setIsLoading] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
   const [invitationData, setInvitationData] = useState([]);
   useEffect(() => {
     getInvitationDataApi();
   }, []);
+  const onRefresh = React.useCallback(() => {
+    setIsRefreshing(true);
+    setTimeout(() => {
+      getInvitationDataApi();
+      setIsRefreshing(false);
+    }, 2000);
+  }, []);
 
   const getInvitationDataApi = async () => {
     try {
+      setIsLoading(true);
       const response = await axios.get(`${BASE_URL}equipment/invitations`, {
         headers: {
           Authorization: `Bearer ${userData.token}`,
         },
       });
       if (response.status === 200) {
+        setIsLoading(false);
         setInvitationData(response?.data?.invitations);
       }
     } catch (error) {
@@ -49,20 +61,16 @@ export default function Notifications({ navigation }) {
         assign_equip_id: equipment_id,
       };
       console.log("🚀 ~ invitationAcceptRejectApi ~ body:", body);
-      const response = await axios.get(`${BASE_URL}equipment/accept`, {
+      const response = await axios.post(`${BASE_URL}equipment/accept`, body, {
         headers: {
           Authorization: `Bearer ${userData.token}`,
         },
       });
       if (response.status === 200) {
-        console.log(
-          "🚀 ~ invitationAcceptRejectApi ~ response:",
-          response?.data
-        );
         Toast.show(response?.data?.message, {
           type: "success",
         });
-        console.log(response?.data);
+        navigation.goBack();
       }
     } catch (error) {
       Toast.show(error?.response?.data?.message, {
@@ -82,7 +90,7 @@ export default function Notifications({ navigation }) {
         assign_equip_id: equipment_id,
       };
       console.log("🚀 ~ invitationAcceptRejectApi ~ body:", body);
-      const response = await axios.get(`${BASE_URL}equipment/accept`, {
+      const response = await axios.post(`${BASE_URL}equipment/accept`, body, {
         headers: {
           Authorization: `Bearer ${userData.token}`,
         },
@@ -95,6 +103,7 @@ export default function Notifications({ navigation }) {
         Toast.show(response?.data?.message, {
           type: "success",
         });
+        navigation.goBack();
         console.log(response?.data);
       }
     } catch (error) {
@@ -125,6 +134,7 @@ export default function Notifications({ navigation }) {
     try {
       const response = await axios.patch(
         `${BASE_URL}equipment/return_request/${eq_id}`,
+        {},
         {
           headers: {
             Authorization: `Bearer ${userData.token}`,
@@ -132,15 +142,20 @@ export default function Notifications({ navigation }) {
         }
       );
       if (response.status === 200) {
+        Toast.show(response?.data?.message, {
+          type: "success",
+        });
         console.log(response?.data);
       }
     } catch (error) {
       console.log("🚀 ~ return request:", error?.response?.data);
+      Toast.show(error.response?.data?.message, {
+        type: "danger",
+      });
       setIsLoading(false);
     }
   }
 
-  console.log("🚀 ~ Notifications ~ invitationData:", invitationData);
   return (
     <SafeAreaView
       style={{ backgroundColor: AppColors.white, flex: 1, padding: 10 }}
@@ -150,6 +165,7 @@ export default function Notifications({ navigation }) {
         barStyle={"dark-content"}
         translucent={false}
       />
+      <Loader loading={isLoading} />
       <View
         style={{
           flexDirection: "row",
@@ -184,6 +200,13 @@ export default function Notifications({ navigation }) {
           data={invitationData}
           renderItem={({ item }) =>
             EquipmentCard({ item, onAcceptPress, onRejectPress, onReturnPress })
+          }
+          refreshControl={
+            <RefreshControl
+              colors={[AppColors.primary]}
+              refreshing={isRefreshing}
+              onRefresh={onRefresh}
+            />
           }
         />
       )}

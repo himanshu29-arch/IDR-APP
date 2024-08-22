@@ -304,13 +304,15 @@ export default function ViewEquipment({ navigation, route }) {
             >
               Details
             </MyText>
-            <CustomIcon
-              name="ellipsis-vertical"
-              onPress={() => {
-                setMenuPress(true);
-                refRBSheet.current.open();
-              }}
-            />
+            {isNotIDROrClientEmployee && (
+              <CustomIcon
+                name="ellipsis-vertical"
+                onPress={() => {
+                  setMenuPress(true);
+                  refRBSheet.current.open();
+                }}
+              />
+            )}
           </View>
           <View style={{}}>
             <MyText style={{ marginVertical: 5, color: AppColors.black }}>
@@ -323,7 +325,7 @@ export default function ViewEquipment({ navigation, route }) {
                 onChangeText={(txt) => handleChange("serial_number", txt)}
                 style={[styles.default]}
                 multiline
-                editable={isEdit}
+                editable={false}
               />
             </View>
           </View>
@@ -435,17 +437,18 @@ export default function ViewEquipment({ navigation, route }) {
             />
           </View>
         ) : null}
-        {userData?.user?.user_type !== "Client Employee" && (
-          <CustomButton
-            title="Transfer Equipment"
-            onPress={() => {
-              setMenuPress(false);
-              refRBSheet.current.open();
-            }}
-            isdisabled={false}
-            _width={wp(90)}
-          />
-        )}
+        {userData?.user?.user_type !== "Client Employee" &&
+          userData?.user?.user_type !== "IDR Employee" && (
+            <CustomButton
+              title="Transfer Equipment"
+              onPress={() => {
+                setMenuPress(false);
+                refRBSheet.current.open();
+              }}
+              isdisabled={false}
+              _width={wp(90)}
+            />
+          )}
       </KeyboardAwareScrollView>
       <RBSheet
         ref={refRBSheet}
@@ -484,7 +487,7 @@ export default function ViewEquipment({ navigation, route }) {
             menuPress == true
               ? BottomSheetDataDeleteItem
               : userData?.user?.user_type === "IDR Employee"
-              ? [BottomSheetData[0]]
+              ? null
               : BottomSheetData
           }
         />

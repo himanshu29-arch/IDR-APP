@@ -44,6 +44,10 @@ export default function Equipment({ navigation }) {
   const [locationOptions, setLocationOptions] = useState([]);
 
   const { userData } = useSelector((state: RootState) => state.auth);
+  const userType = userData?.user?.user_type;
+
+  const isNotIDROrClientEmployee =
+    userType !== "IDR Employee" && userType !== "Client Employee";
   const onRefresh = useCallback(() => {
     setRefreshing(true);
     // Simulate a network request
@@ -379,11 +383,12 @@ export default function Equipment({ navigation }) {
             }
           />
         )}
-
-        <FloatingButton
-          onPress={() => navigation?.navigate("AddEquipment")}
-          IconComp={<AntDesign name="plus" size={25} color="#fff" />}
-        />
+        {isNotIDROrClientEmployee && (
+          <FloatingButton
+            onPress={() => navigation?.navigate("AddEquipment")}
+            IconComp={<AntDesign name="plus" size={25} color="#fff" />}
+          />
+        )}
       </View>
     </SafeAreaView>
   );

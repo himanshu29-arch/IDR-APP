@@ -46,6 +46,7 @@ import ViewWOInventories from "./ViewWOInventories";
 import RBSheet from "react-native-raw-bottom-sheet";
 import { BottomSheetItem } from "../../components/BottomSheetItem";
 import { Dropdown } from "react-native-element-dropdown";
+import ViewWOEquipments from "./ViewWOEquipments";
 
 export default function ViewWorkOrder({ navigation, route }) {
   const { OrderId } = route.params;
@@ -595,9 +596,9 @@ export default function ViewWorkOrder({ navigation, route }) {
           data?.workOrder?.inventories.length !== 0 && (
             <ViewWOInventories InventoriesData={data?.workOrder?.inventories} />
           )}
-        {data?.workOrder?.equipments &&
-          data?.workOrder?.equipments.length !== 0 && (
-            <ViewWOInventories InventoriesData={data?.workOrder?.inventories} />
+        {data?.workOrder?.equipment &&
+          data?.workOrder?.equipment.length !== 0 && (
+            <ViewWOEquipments InventoriesData={data?.workOrder?.equipment} />
           )}
       </KeyboardAwareScrollView>
       <RBSheet

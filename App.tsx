@@ -1,12 +1,17 @@
-import { View, Text } from "react-native";
-import React, { useEffect } from "react";
+import { View, Text, Linking } from "react-native";
+import React, { useEffect, useState } from "react";
 import EntryStack from "./src/navigation/EntryStack";
 import { Provider } from "react-redux";
 import { persistor, store } from "./src/redux/store";
 import { PersistGate } from "redux-persist/integration/react";
 import { ToastProvider } from "react-native-toast-notifications";
-import { checkAndUploadFCMPermission } from "./src/utils/notiHelper";
-
+import {
+  checkAndUploadFCMPermission,
+  NotificationListener,
+  requestNotificationPermission,
+} from "./src/utils/notiHelper";
+import { CustomAlert } from "./src/components/CustomAlert";
+import { checkNotifications } from "react-native-permissions";
 export default function App() {
   const getToken = async () => {
     try {
@@ -17,8 +22,11 @@ export default function App() {
   };
 
   useEffect(() => {
+    requestNotificationPermission();
     getToken();
+    NotificationListener();
   }, []);
+
   return (
     <Provider store={store}>
       <PersistGate loading={null} persistor={persistor}>

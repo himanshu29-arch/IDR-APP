@@ -18,6 +18,7 @@ const EquipmentCard = ({
   onRejectPress,
   onReturnPress,
 }) => {
+  console.log("🚀 ~ item: equipment Card", item);
   return (
     <View style={[styles.card, ShadowStyle]}>
       <View
@@ -39,6 +40,23 @@ const EquipmentCard = ({
             }}
           >
             {item?.equipments?.device_type}
+          </MyText>
+        </View>
+        <View>
+          <MyText fontType="medium" style={{ fontSize: 14 }}>
+            Status
+          </MyText>
+          <MyText
+            style={{
+              fontSize: 14,
+              fontFamily: Fonts.InterBold,
+              marginTop: hp(1),
+              alignSelf: "center",
+            }}
+          >
+            {item?.status == "Accepted" && item?.is_return_req == true
+              ? `Return`
+              : item?.status}
           </MyText>
         </View>
       </View>
@@ -99,7 +117,7 @@ const EquipmentCard = ({
             <Text style={styles.buttonText}>Reject</Text>
           </TouchableOpacity>
         </View>
-      ) : item?.status == "Accepted" ? (
+      ) : item?.status == "Accepted" && item?.is_return_req != true ? (
         <View style={{ alignSelf: "center" }}>
           <TouchableOpacity
             onPress={() => onReturnPress(item?.assign_equip_id)}

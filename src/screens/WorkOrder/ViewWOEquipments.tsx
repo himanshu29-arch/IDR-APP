@@ -8,6 +8,7 @@ import { hp, wp } from "../../utils/resDimensions";
 import Entypo from "react-native-vector-icons/Entypo";
 
 export default function ViewWOEquipments({ InventoriesData }) {
+  console.log("🚀 ~ ViewWOEquipments ~ EquipmentsData:", InventoriesData);
   const [showAll, setShowAll] = useState(false);
 
   const toggleShowAll = () => {
@@ -52,11 +53,11 @@ export default function ViewWOEquipments({ InventoriesData }) {
           />
         </View>
         <MyText style={{ marginVertical: 5, color: AppColors.black }}>
-          Quantity
+          Location
         </MyText>
         <View style={[styles.viewcontainer, styles.outlined]}>
           <TextInput
-            value={item?.quantity.toString()}
+            value={item?.location_name}
             style={[styles.default]}
             editable={false}
             multiline
@@ -77,7 +78,7 @@ export default function ViewWOEquipments({ InventoriesData }) {
           }}
         >
           <MyText fontType="bold" style={{ fontSize: 22 }}>
-            Inventory Parts Used To Complete Service
+            Assigned Equipments
           </MyText>
           <Pressable onPress={toggleShowAll}>
             <Entypo
