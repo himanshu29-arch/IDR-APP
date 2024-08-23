@@ -111,7 +111,7 @@ const EquipmentCard = ({
             onPress={() => onRejectPress(item?.assign_equip_id)}
             style={[
               styles.buttonContainer,
-              { backgroundColor: "rgba(204, 0, 0, .6)", width: wp(35) },
+              { backgroundColor: "#FA003F", width: wp(35) },
             ]}
           >
             <Text style={styles.buttonText}>Reject</Text>
@@ -123,7 +123,7 @@ const EquipmentCard = ({
             onPress={() => onReturnPress(item?.assign_equip_id)}
             style={[
               styles.buttonContainer,
-              { backgroundColor: "rgba(204, 0, 0, .6)", width: wp(75) },
+              { backgroundColor: "#FA003F", width: wp(75) },
             ]}
           >
             <Text style={styles.buttonText}>Return</Text>
