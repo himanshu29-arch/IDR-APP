@@ -1,8 +1,12 @@
 import messaging from "@react-native-firebase/messaging";
 import { Alert, Linking } from "react-native";
 import {
+  check,
   checkNotifications,
+  PERMISSIONS,
+  request,
   requestNotifications,
+  RESULTS,
 } from "react-native-permissions";
 import { PermissionStatusType } from "./Emum";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -60,6 +64,29 @@ export async function requestUserPermission() {
   }
 }
 
+export const requestPermissionAndroid = async () => {
+  console.log("request user permission andorid");
+  const checkPermission = await checkNotificationPermission();
+  if (checkPermission !== RESULTS.GRANTED) {
+    const request = await requestNotificationPermissionAndroid();
+    if (request !== RESULTS.GRANTED) {
+      // permission not granted
+      showSettingsAlert();
+    } else {
+      uploadFcmToken();
+    }
+  }
+};
+const requestNotificationPermissionAndroid = async () => {
+  const result = await request(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
+  return result;
+};
+
+const checkNotificationPermission = async () => {
+  const result = await check(PERMISSIONS.ANDROID.POST_NOTIFICATIONS);
+  return result;
+};
+
 const showSettingsAlert = () => {
   const toast = useToast();
   toast.show("Please allow notification permission from settings.", {
@@ -102,6 +129,11 @@ export const NotificationListener = () => {
       }
     });
   messaging().onMessage(async (remotemessage) => {
+    console.log(
+      "🚀 ~ messaging ~ remotemessage: onMessage",
+      remotemessage?.messageId
+    );
+    // hitLocalNoti(remotemessage);
     PushNotification.localNotification({
       title: remotemessage.notification.title,
       message: remotemessage.notification.body,
@@ -109,10 +141,68 @@ export const NotificationListener = () => {
     // navigate("Notifications");
   });
   messaging().onNotificationOpenedApp((remotemessage) => {
+    console.log(
+      "🚀 ~ messaging ~ remotemessage: onNotificationOpenedApp",
+      remotemessage
+    );
     PushNotification.localNotification({
       title: remotemessage.notification.title,
       message: remotemessage.notification.body,
+      channelId: 1,
     });
     // navigate("Notifications");
+  });
+};
+
+const hitLocalNoti = (remoteMessage) => {
+  PushNotification.configure({
+    // (optional) Called when Token is generated (iOS and Android)
+    onRegister: function (token) {
+      console.log("TOKEN:", token);
+    },
+
+    // (required) Called when a remote is received or opened, or local notification is opened
+    onNotification: function (notification) {
+      console.log("NOTIFICATION:", notification);
+      console.log(
+        "you pressed on the local notification",
+        "remoteMessage:" + remoteMessage.data.payload
+      );
+
+      // (required) Called when a remote is received or opened, or local notification is opened
+      // notification.finish(PushNotificationIOS.FetchResult.NoData);
+    },
+
+    // (optional) Called when Registered Action is pressed and invokeApp is false, if true onNotification will be called (Android)
+    onAction: function (notification) {
+      console.log("ACTION:", notification.action);
+      console.log("NOTIFICATION:", notification);
+      // process the action
+    },
+
+    // (optional) Called when the user fails to register for remote notifications. Typically occurs when APNS is having issues, or the device is a simulator. (iOS)
+    onRegistrationError: function (err) {
+      console.error(err.message, err);
+    },
+
+    // IOS ONLY (optional): default: all - Permissions to register.
+    permissions: {
+      alert: true,
+      badge: true,
+      sound: true,
+    },
+
+    // Should the initial notification be popped automatically
+    // default: true
+    popInitialNotification: true,
+
+    /**
+     * (optional) default: true
+     * - Specified if permissions (ios) and token (android and ios) will requested or not,
+     * - if not, you must call PushNotificationsHandler.requestPermissions() later
+     * - if you are not using remote notification or do not have Firebase installed, use this:
+     *     requestPermissions: Platform.OS === 'ios'
+     */
+    requestPermissions: true,
   });
 };

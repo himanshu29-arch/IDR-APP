@@ -14,7 +14,7 @@ import ViewWorkOrder from "../screens/WorkOrder/ViewWorkOrder";
 import Notifications from "../screens/Notifications/Notification";
 import Forgotpassword from "../screens/ForgotPassword/ForgotPassword";
 import ResetPassword from "../screens/ResetPassword/ResetPassword";
-import { Linking } from "react-native";
+import { Linking, Platform } from "react-native";
 import ScanQR from "../screens/QRCode/ScanQR";
 import ViewInventory from "../screens/Inventory/ViewInventory";
 import AddInventory from "../screens/Inventory/AddInventory";
@@ -28,6 +28,7 @@ import EqWOTransfer from "../screens/Equipment/TransferEquipment/EqWOTransfer";
 import ScanEquipmentQR from "../screens/QRCode/ScanEquipmentQR";
 import {
   NotificationListener,
+  requestPermissionAndroid,
   requestUserPermission,
 } from "../utils/notiHelper";
 import { navigate, navigationRef } from "./RootNavigation";
@@ -42,7 +43,11 @@ export default function EntryStack() {
 
   useEffect(() => {
     // handleFCMSetup();
-    requestUserPermission();
+    {
+      Platform.OS == "ios"
+        ? requestUserPermission()
+        : requestPermissionAndroid();
+    }
     NotificationListener();
   }, []);
 
